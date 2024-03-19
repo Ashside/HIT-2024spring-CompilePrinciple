@@ -42,7 +42,7 @@ rule CUSTOM_COMMAND
 # Rule for re-running cmake.
 
 rule RERUN_CMAKE
-  command = /home/ashside/.cache/JetBrains/RemoteDev/dist/562cce36751b3_CLion-2023.3.4/bin/cmake/linux/x64/bin/cmake --regenerate-during-build -S/home/ashside/CompilePrinciple -B/home/ashside/CompilePrinciple/cmake-build-debug
+  command = /home/ashside/.cache/JetBrains/RemoteDev/dist/562cce36751b3_CLion-2023.3.4/bin/cmake/linux/x64/bin/cmake --regenerate-during-build -S/home/ashside/CompilePrinciple/Lab1 -B/home/ashside/CompilePrinciple/Lab1/cmake-build-debug
   description = Re-running CMake...
   generator = 1
 
