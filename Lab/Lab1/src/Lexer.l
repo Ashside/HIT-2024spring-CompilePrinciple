@@ -5,6 +5,7 @@
 #include "SyntaxTree.h"
 
 #include "Parse.tab.h"
+extern YYSTYPE yylval;
 
 int yycolumn = 1;
 extern void yyerror(const char *msg, int lineno,char type,const char *tokenText);
@@ -92,7 +93,8 @@ ERROR .
 }
 
 {INT} {
-            printf("INT\n");
+            //printf("INT\n");
+            yylval.parseNode=createNode(INT,yylineno,1,yytext);
             return INT;
 }
 {FLOAT} {

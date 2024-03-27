@@ -11,11 +11,12 @@
     {
         return 1;
     }
+    
 
 %}
 
 %union {
-    AstNode parseNode;
+    AstNode* parseNode;
 }
 
 %token <parseNode> INT

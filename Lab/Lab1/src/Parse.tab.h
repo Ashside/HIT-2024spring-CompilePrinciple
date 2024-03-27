@@ -90,9 +90,9 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 17 "Parse.y"
+#line 18 "Parse.y"
 
-    AstNode parseNode;
+    AstNode* parseNode;
 
 #line 98 "Parse.tab.h"
 

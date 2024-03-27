@@ -594,11 +594,12 @@ char *yytext;
 #include "SyntaxTree.h"
 
 #include "Parse.tab.h"
+extern YYSTYPE yylval;
 
 int yycolumn = 1;
 extern void yyerror(const char *msg, int lineno,char type,const char *tokenText);
-#line 601 "lex.yy.c"
 #line 602 "lex.yy.c"
+#line 603 "lex.yy.c"
 
 #define INITIAL 0
 
@@ -815,9 +816,9 @@ YY_DECL
 		}
 
 	{
-#line 68 "Lexer.l"
+#line 69 "Lexer.l"
 
-#line 821 "lex.yy.c"
+#line 822 "lex.yy.c"
 
 	while ( /*CONSTCOND*/1 )		/* loops until end-of-file is reached */
 		{
@@ -887,12 +888,12 @@ do_action:	/* This label is used only to access EOF actions. */
 case 1:
 /* rule 1 can match eol */
 YY_RULE_SETUP
-#line 69 "Lexer.l"
+#line 70 "Lexer.l"
 { }
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 70 "Lexer.l"
+#line 71 "Lexer.l"
 {
             while (input() != '\n') ;
             
@@ -900,7 +901,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 74 "Lexer.l"
+#line 75 "Lexer.l"
 {
         int c;
         int startLine = yylineno;
@@ -923,15 +924,16 @@ YY_RULE_SETUP
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 94 "Lexer.l"
+#line 95 "Lexer.l"
 {
-            printf("INT\n");
+            //printf("INT\n");
+            yylval.parseNode=createNode(INT,yylineno,1,yytext);
             return INT;
 }
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 98 "Lexer.l"
+#line 100 "Lexer.l"
 {
             printf("FLOAT\n");
             return FLOAT;
@@ -939,7 +941,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 102 "Lexer.l"
+#line 104 "Lexer.l"
 {
             printf("SEMI\n");
             return SEMI;
@@ -947,7 +949,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 106 "Lexer.l"
+#line 108 "Lexer.l"
 {
             printf("COMMA\n");
             return COMMA;
@@ -955,7 +957,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 110 "Lexer.l"
+#line 112 "Lexer.l"
 {
             printf("ASSIGNOP\n");
             return ASSIGNOP;
@@ -963,7 +965,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 114 "Lexer.l"
+#line 116 "Lexer.l"
 {
             printf("RELOP\n");
             return RELOP;
@@ -971,7 +973,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 118 "Lexer.l"
+#line 120 "Lexer.l"
 {
             printf("PLUS\n");
             return PLUS;
@@ -979,7 +981,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 122 "Lexer.l"
+#line 124 "Lexer.l"
 {
             printf("MINUS\n");
             return MINUS;
@@ -987,7 +989,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 126 "Lexer.l"
+#line 128 "Lexer.l"
 {
             printf("STAR\n");
             return STAR;
@@ -995,7 +997,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 130 "Lexer.l"
+#line 132 "Lexer.l"
 {
             printf("DIV\n");
             return DIV;
@@ -1003,7 +1005,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 134 "Lexer.l"
+#line 136 "Lexer.l"
 {
             printf("AND\n");
             return AND;
@@ -1011,7 +1013,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 138 "Lexer.l"
+#line 140 "Lexer.l"
 {
             printf("OR\n");
             return OR;
@@ -1019,7 +1021,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 142 "Lexer.l"
+#line 144 "Lexer.l"
 {
             printf("DOT\n");
             return DOT;
@@ -1027,7 +1029,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 146 "Lexer.l"
+#line 148 "Lexer.l"
 {
             printf("NOT\n");
             return NOT;
@@ -1035,7 +1037,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 150 "Lexer.l"
+#line 152 "Lexer.l"
 {
             printf("TYPE: %s\n", yytext);
             return TYPE;
@@ -1043,7 +1045,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 154 "Lexer.l"
+#line 156 "Lexer.l"
 {
             printf("LP\n");
             return LP;
@@ -1051,7 +1053,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 158 "Lexer.l"
+#line 160 "Lexer.l"
 {
             printf("RP\n");
             return RP;
@@ -1059,7 +1061,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 162 "Lexer.l"
+#line 164 "Lexer.l"
 {
             printf("LB\n");
             return LB;
@@ -1067,7 +1069,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 166 "Lexer.l"
+#line 168 "Lexer.l"
 {
             printf("RB\n");
             return RB;
@@ -1075,7 +1077,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 170 "Lexer.l"
+#line 172 "Lexer.l"
 {
             printf("LC\n");
             return LC;
@@ -1083,7 +1085,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 174 "Lexer.l"
+#line 176 "Lexer.l"
 {
             printf("RC\n");
             return RC;
@@ -1091,7 +1093,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 178 "Lexer.l"
+#line 180 "Lexer.l"
 {
             printf("STRUCT\n");
             return STRUCT;
@@ -1099,7 +1101,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 182 "Lexer.l"
+#line 184 "Lexer.l"
 {
             printf("RETURN\n");
             return RETURN;
@@ -1107,7 +1109,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 186 "Lexer.l"
+#line 188 "Lexer.l"
 {
             printf("IF\n");
             return IF;
@@ -1115,7 +1117,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 190 "Lexer.l"
+#line 192 "Lexer.l"
 {
             printf("ELSE\n");
             return ELSE;
@@ -1123,7 +1125,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 194 "Lexer.l"
+#line 196 "Lexer.l"
 {
             printf("WHILE\n");
             return WHILE;
@@ -1131,7 +1133,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 198 "Lexer.l"
+#line 200 "Lexer.l"
 {
             printf("ID: %s\n", yytext);
             return ID;
@@ -1139,7 +1141,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 31:
 YY_RULE_SETUP
-#line 202 "Lexer.l"
+#line 204 "Lexer.l"
 {
             yyerror("Invalid INT", yylineno, 'A',yytext);
             return ERROR;
@@ -1147,7 +1149,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
-#line 206 "Lexer.l"
+#line 208 "Lexer.l"
 {
             yyerror("Invalid FLOAT", yylineno, 'A',yytext);
             return ERROR;
@@ -1155,7 +1157,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
-#line 211 "Lexer.l"
+#line 213 "Lexer.l"
 {
             yyerror("Invalid ID", yylineno, 'A',yytext);
             return ERROR;
@@ -1163,7 +1165,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
-#line 216 "Lexer.l"
+#line 218 "Lexer.l"
 {
             yyerror("Invalid character", yylineno, 'A',yytext);
             return ERROR;
@@ -1171,10 +1173,10 @@ YY_RULE_SETUP
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
-#line 220 "Lexer.l"
+#line 222 "Lexer.l"
 ECHO;
 	YY_BREAK
-#line 1178 "lex.yy.c"
+#line 1180 "lex.yy.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -2191,5 +2193,5 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 220 "Lexer.l"
+#line 222 "Lexer.l"
 
