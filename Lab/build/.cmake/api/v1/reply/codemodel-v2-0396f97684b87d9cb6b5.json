@@ -15,7 +15,8 @@
 					"source" : ".",
 					"targetIndexes" : 
 					[
-						0
+						0,
+						1
 					]
 				}
 			],
@@ -30,7 +31,8 @@
 					"name" : "Lab1",
 					"targetIndexes" : 
 					[
-						0
+						0,
+						1
 					]
 				}
 			],
@@ -39,8 +41,15 @@
 				{
 					"directoryIndex" : 0,
 					"id" : "Lab1::@6890427a1f51a3e7e1df",
-					"jsonFile" : "target-Lab1-Debug-de660d6f10fce034c335.json",
+					"jsonFile" : "target-Lab1-Debug-f885d0ea9daca75aa073.json",
 					"name" : "Lab1",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "RunMakefile::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-RunMakefile-Debug-87c397a7a17be1deffcd.json",
+					"name" : "RunMakefile",
 					"projectIndex" : 0
 				}
 			]

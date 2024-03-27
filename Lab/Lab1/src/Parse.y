@@ -1,7 +1,17 @@
 %{
     //#include "lex.yy.c"
     #include "SyntaxTree.h"
-    int yyerror(char* msg);
+    //在lex.yy.c里定义，会被yyparse()调用。在此声明消除编译和链接错误。
+    extern int yylex(void); 
+
+    // 在此声明，消除yacc生成代码时的告警
+    extern int yyparse(void); 
+    extern void yyerror(const char *s);
+    int yywrap()
+    {
+        return 1;
+    }
+
 %}
 
 %union {
@@ -14,7 +24,6 @@
 %token <parseNode> SEMI
 %token <parseNode> COMMA
 %token <parseNode> ASSIGNOP
-%token <parseNode> RELOP
 %token <parseNode> PLUS
 %token <parseNode> MINUS
 %token <parseNode> STAR
@@ -23,18 +32,21 @@
 %token <parseNode> OR
 %token <parseNode> DOT
 %token <parseNode> NOT
-%token <parseNode> TYPE
+%token <parseNode> RELOP
 %token <parseNode> LP
 %token <parseNode> RP
 %token <parseNode> LB
 %token <parseNode> RB
 %token <parseNode> LC
 %token <parseNode> RC
+%token <parseNode> TYPE
 %token <parseNode> STRUCT
 %token <parseNode> RETURN
 %token <parseNode> IF
 %token <parseNode> ELSE
 %token <parseNode> WHILE
+%token <parseNode> ERROR
+
 
 %type <parseNode> Program ExtDefList ExtDef ExtDecList
 %type <parseNode> Specifier StructSpecifier OptTag Tag
@@ -52,7 +64,7 @@
 %left STAR DIV
 %right NOT                      /* TODO: 取负操作呢？ */
 %left DOT LP RP LB RB           /* TODO: 似乎{}也是左结合的 */
-%nonassoc ELSE                              
+%nonassoc ELSE ERROR                             
 %%
 // HIGH LEVEL GRAMMAR
 Program:

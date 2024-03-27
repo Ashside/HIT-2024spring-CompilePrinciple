@@ -69,24 +69,10 @@ include CMakeFiles/Lab1.dir/progress.make
 # Include the compile flags for this target's objects.
 include CMakeFiles/Lab1.dir/flags.make
 
-CMakeFiles/Lab1.dir/src/Parse.tab.c.o: CMakeFiles/Lab1.dir/flags.make
-CMakeFiles/Lab1.dir/src/Parse.tab.c.o: /home/ashside/CompilePrinciple/Lab/Lab1/src/Parse.tab.c
-CMakeFiles/Lab1.dir/src/Parse.tab.c.o: CMakeFiles/Lab1.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/ashside/CompilePrinciple/Lab/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building C object CMakeFiles/Lab1.dir/src/Parse.tab.c.o"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/Lab1.dir/src/Parse.tab.c.o -MF CMakeFiles/Lab1.dir/src/Parse.tab.c.o.d -o CMakeFiles/Lab1.dir/src/Parse.tab.c.o -c /home/ashside/CompilePrinciple/Lab/Lab1/src/Parse.tab.c
-
-CMakeFiles/Lab1.dir/src/Parse.tab.c.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/Lab1.dir/src/Parse.tab.c.i"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/ashside/CompilePrinciple/Lab/Lab1/src/Parse.tab.c > CMakeFiles/Lab1.dir/src/Parse.tab.c.i
-
-CMakeFiles/Lab1.dir/src/Parse.tab.c.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/Lab1.dir/src/Parse.tab.c.s"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/ashside/CompilePrinciple/Lab/Lab1/src/Parse.tab.c -o CMakeFiles/Lab1.dir/src/Parse.tab.c.s
-
 CMakeFiles/Lab1.dir/src/SyntaxTree.c.o: CMakeFiles/Lab1.dir/flags.make
 CMakeFiles/Lab1.dir/src/SyntaxTree.c.o: /home/ashside/CompilePrinciple/Lab/Lab1/src/SyntaxTree.c
 CMakeFiles/Lab1.dir/src/SyntaxTree.c.o: CMakeFiles/Lab1.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/ashside/CompilePrinciple/Lab/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building C object CMakeFiles/Lab1.dir/src/SyntaxTree.c.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/ashside/CompilePrinciple/Lab/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building C object CMakeFiles/Lab1.dir/src/SyntaxTree.c.o"
 	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/Lab1.dir/src/SyntaxTree.c.o -MF CMakeFiles/Lab1.dir/src/SyntaxTree.c.o.d -o CMakeFiles/Lab1.dir/src/SyntaxTree.c.o -c /home/ashside/CompilePrinciple/Lab/Lab1/src/SyntaxTree.c
 
 CMakeFiles/Lab1.dir/src/SyntaxTree.c.i: cmake_force
@@ -100,7 +86,7 @@ CMakeFiles/Lab1.dir/src/SyntaxTree.c.s: cmake_force
 CMakeFiles/Lab1.dir/src/lex.yy.c.o: CMakeFiles/Lab1.dir/flags.make
 CMakeFiles/Lab1.dir/src/lex.yy.c.o: /home/ashside/CompilePrinciple/Lab/Lab1/src/lex.yy.c
 CMakeFiles/Lab1.dir/src/lex.yy.c.o: CMakeFiles/Lab1.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/ashside/CompilePrinciple/Lab/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building C object CMakeFiles/Lab1.dir/src/lex.yy.c.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/ashside/CompilePrinciple/Lab/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building C object CMakeFiles/Lab1.dir/src/lex.yy.c.o"
 	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/Lab1.dir/src/lex.yy.c.o -MF CMakeFiles/Lab1.dir/src/lex.yy.c.o.d -o CMakeFiles/Lab1.dir/src/lex.yy.c.o -c /home/ashside/CompilePrinciple/Lab/Lab1/src/lex.yy.c
 
 CMakeFiles/Lab1.dir/src/lex.yy.c.i: cmake_force
@@ -114,7 +100,7 @@ CMakeFiles/Lab1.dir/src/lex.yy.c.s: cmake_force
 CMakeFiles/Lab1.dir/src/main.c.o: CMakeFiles/Lab1.dir/flags.make
 CMakeFiles/Lab1.dir/src/main.c.o: /home/ashside/CompilePrinciple/Lab/Lab1/src/main.c
 CMakeFiles/Lab1.dir/src/main.c.o: CMakeFiles/Lab1.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/ashside/CompilePrinciple/Lab/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building C object CMakeFiles/Lab1.dir/src/main.c.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/ashside/CompilePrinciple/Lab/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building C object CMakeFiles/Lab1.dir/src/main.c.o"
 	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/Lab1.dir/src/main.c.o -MF CMakeFiles/Lab1.dir/src/main.c.o.d -o CMakeFiles/Lab1.dir/src/main.c.o -c /home/ashside/CompilePrinciple/Lab/Lab1/src/main.c
 
 CMakeFiles/Lab1.dir/src/main.c.i: cmake_force
@@ -127,7 +113,6 @@ CMakeFiles/Lab1.dir/src/main.c.s: cmake_force
 
 # Object files for target Lab1
 Lab1_OBJECTS = \
-"CMakeFiles/Lab1.dir/src/Parse.tab.c.o" \
 "CMakeFiles/Lab1.dir/src/SyntaxTree.c.o" \
 "CMakeFiles/Lab1.dir/src/lex.yy.c.o" \
 "CMakeFiles/Lab1.dir/src/main.c.o"
@@ -135,13 +120,12 @@ Lab1_OBJECTS = \
 # External object files for target Lab1
 Lab1_EXTERNAL_OBJECTS =
 
-Lab1: CMakeFiles/Lab1.dir/src/Parse.tab.c.o
 Lab1: CMakeFiles/Lab1.dir/src/SyntaxTree.c.o
 Lab1: CMakeFiles/Lab1.dir/src/lex.yy.c.o
 Lab1: CMakeFiles/Lab1.dir/src/main.c.o
 Lab1: CMakeFiles/Lab1.dir/build.make
 Lab1: CMakeFiles/Lab1.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/ashside/CompilePrinciple/Lab/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Linking C executable Lab1"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/ashside/CompilePrinciple/Lab/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Linking C executable Lab1"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/Lab1.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.

@@ -2,6 +2,22 @@
 	"entries" : 
 	[
 		{
+			"name" : "BISON_EXECUTABLE",
+			"properties" : 
+			[
+				{
+					"name" : "ADVANCED",
+					"value" : "1"
+				},
+				{
+					"name" : "HELPSTRING",
+					"value" : "path to the bison executable"
+				}
+			],
+			"type" : "FILEPATH",
+			"value" : "/usr/bin/bison"
+		},
+		{
 			"name" : "CMAKE_ADDR2LINE",
 			"properties" : 
 			[
@@ -988,6 +1004,78 @@
 			],
 			"type" : "BOOL",
 			"value" : "FALSE"
+		},
+		{
+			"name" : "FIND_PACKAGE_MESSAGE_DETAILS_BISON",
+			"properties" : 
+			[
+				{
+					"name" : "HELPSTRING",
+					"value" : "Details about finding BISON"
+				}
+			],
+			"type" : "INTERNAL",
+			"value" : "[/usr/bin/bison][v3.8.2()]"
+		},
+		{
+			"name" : "FIND_PACKAGE_MESSAGE_DETAILS_FLEX",
+			"properties" : 
+			[
+				{
+					"name" : "HELPSTRING",
+					"value" : "Details about finding FLEX"
+				}
+			],
+			"type" : "INTERNAL",
+			"value" : "[/usr/bin/flex][v2.6.4()]"
+		},
+		{
+			"name" : "FLEX_EXECUTABLE",
+			"properties" : 
+			[
+				{
+					"name" : "ADVANCED",
+					"value" : "1"
+				},
+				{
+					"name" : "HELPSTRING",
+					"value" : "path to the flex executable"
+				}
+			],
+			"type" : "FILEPATH",
+			"value" : "/usr/bin/flex"
+		},
+		{
+			"name" : "FLEX_INCLUDE_DIR",
+			"properties" : 
+			[
+				{
+					"name" : "ADVANCED",
+					"value" : "1"
+				},
+				{
+					"name" : "HELPSTRING",
+					"value" : "Path to the flex headers"
+				}
+			],
+			"type" : "PATH",
+			"value" : "/usr/include"
+		},
+		{
+			"name" : "FL_LIBRARY",
+			"properties" : 
+			[
+				{
+					"name" : "ADVANCED",
+					"value" : "1"
+				},
+				{
+					"name" : "HELPSTRING",
+					"value" : "Path to the fl library"
+				}
+			],
+			"type" : "FILEPATH",
+			"value" : "/usr/lib/x86_64-linux-gnu/libfl.so"
 		},
 		{
 			"name" : "Lab1_BINARY_DIR",

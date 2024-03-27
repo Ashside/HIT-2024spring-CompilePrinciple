@@ -6,7 +6,6 @@ extern int yylex(void);
 
 int main(int argc, char **argv)
 {
-    printf("Hello, World!\n");
     if (argc > 1)
     {
         if (!(yyin = fopen(argv[1], "r")))
@@ -16,7 +15,7 @@ int main(int argc, char **argv)
         }
     }
     while (1){
-        printf("Token: %d\n", yylex());
+        //printf("Token: %d\n", yylex());
         if (yylex() == 0)
         {
             break;

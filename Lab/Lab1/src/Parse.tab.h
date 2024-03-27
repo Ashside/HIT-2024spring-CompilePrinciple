@@ -60,27 +60,28 @@ extern int yydebug;
     SEMI = 261,                    /* SEMI  */
     COMMA = 262,                   /* COMMA  */
     ASSIGNOP = 263,                /* ASSIGNOP  */
-    RELOP = 264,                   /* RELOP  */
-    PLUS = 265,                    /* PLUS  */
-    MINUS = 266,                   /* MINUS  */
-    STAR = 267,                    /* STAR  */
-    DIV = 268,                     /* DIV  */
-    AND = 269,                     /* AND  */
-    OR = 270,                      /* OR  */
-    DOT = 271,                     /* DOT  */
-    NOT = 272,                     /* NOT  */
-    TYPE = 273,                    /* TYPE  */
-    LP = 274,                      /* LP  */
-    RP = 275,                      /* RP  */
-    LB = 276,                      /* LB  */
-    RB = 277,                      /* RB  */
-    LC = 278,                      /* LC  */
-    RC = 279,                      /* RC  */
+    PLUS = 264,                    /* PLUS  */
+    MINUS = 265,                   /* MINUS  */
+    STAR = 266,                    /* STAR  */
+    DIV = 267,                     /* DIV  */
+    AND = 268,                     /* AND  */
+    OR = 269,                      /* OR  */
+    DOT = 270,                     /* DOT  */
+    NOT = 271,                     /* NOT  */
+    RELOP = 272,                   /* RELOP  */
+    LP = 273,                      /* LP  */
+    RP = 274,                      /* RP  */
+    LB = 275,                      /* LB  */
+    RB = 276,                      /* RB  */
+    LC = 277,                      /* LC  */
+    RC = 278,                      /* RC  */
+    TYPE = 279,                    /* TYPE  */
     STRUCT = 280,                  /* STRUCT  */
     RETURN = 281,                  /* RETURN  */
     IF = 282,                      /* IF  */
     ELSE = 283,                    /* ELSE  */
-    WHILE = 284                    /* WHILE  */
+    WHILE = 284,                   /* WHILE  */
+    ERROR = 285                    /* ERROR  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -89,11 +90,11 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 7 "Parse.y"
+#line 17 "Parse.y"
 
     AstNode* parseNode;
 
-#line 97 "Parse.tab.h"
+#line 98 "Parse.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;

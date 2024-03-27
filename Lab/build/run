@@ -3,7 +3,7 @@
 # 删除output文件夹下的所有文件
 rm -f output/*
 # 编译Lab1
-make
+make all
 
 # 遍历testcases文件夹下的所有文件
 for file in testcases/*

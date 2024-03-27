@@ -117,6 +117,19 @@ depend:
 .PHONY : depend
 
 #=============================================================================
+# Target rules for targets named RunMakefile
+
+# Build rule for target.
+RunMakefile: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 RunMakefile
+.PHONY : RunMakefile
+
+# fast build rule for target.
+RunMakefile/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/RunMakefile.dir/build.make CMakeFiles/RunMakefile.dir/build
+.PHONY : RunMakefile/fast
+
+#=============================================================================
 # Target rules for targets named Lab1
 
 # Build rule for target.
@@ -128,30 +141,6 @@ Lab1: cmake_check_build_system
 Lab1/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Lab1.dir/build.make CMakeFiles/Lab1.dir/build
 .PHONY : Lab1/fast
-
-src/Parse.tab.o: src/Parse.tab.c.o
-.PHONY : src/Parse.tab.o
-
-# target to build an object file
-src/Parse.tab.c.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Lab1.dir/build.make CMakeFiles/Lab1.dir/src/Parse.tab.c.o
-.PHONY : src/Parse.tab.c.o
-
-src/Parse.tab.i: src/Parse.tab.c.i
-.PHONY : src/Parse.tab.i
-
-# target to preprocess a source file
-src/Parse.tab.c.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Lab1.dir/build.make CMakeFiles/Lab1.dir/src/Parse.tab.c.i
-.PHONY : src/Parse.tab.c.i
-
-src/Parse.tab.s: src/Parse.tab.c.s
-.PHONY : src/Parse.tab.s
-
-# target to generate assembly for a file
-src/Parse.tab.c.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Lab1.dir/build.make CMakeFiles/Lab1.dir/src/Parse.tab.c.s
-.PHONY : src/Parse.tab.c.s
 
 src/SyntaxTree.o: src/SyntaxTree.c.o
 .PHONY : src/SyntaxTree.o
@@ -233,10 +222,8 @@ help:
 	@echo "... depend"
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
+	@echo "... RunMakefile"
 	@echo "... Lab1"
-	@echo "... src/Parse.tab.o"
-	@echo "... src/Parse.tab.i"
-	@echo "... src/Parse.tab.s"
 	@echo "... src/SyntaxTree.o"
 	@echo "... src/SyntaxTree.i"
 	@echo "... src/SyntaxTree.s"

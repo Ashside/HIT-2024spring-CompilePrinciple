@@ -1,11 +1,6 @@
 [
 {
   "directory": "/home/ashside/CompilePrinciple/Lab/build",
-  "command": "/usr/bin/cc  -I/home/ashside/CompilePrinciple/Lab/Lab1/include -g -std=gnu11 -o CMakeFiles/Lab1.dir/src/Parse.tab.c.o -c /home/ashside/CompilePrinciple/Lab/Lab1/src/Parse.tab.c",
-  "file": "/home/ashside/CompilePrinciple/Lab/Lab1/src/Parse.tab.c"
-},
-{
-  "directory": "/home/ashside/CompilePrinciple/Lab/build",
   "command": "/usr/bin/cc  -I/home/ashside/CompilePrinciple/Lab/Lab1/include -g -std=gnu11 -o CMakeFiles/Lab1.dir/src/SyntaxTree.c.o -c /home/ashside/CompilePrinciple/Lab/Lab1/src/SyntaxTree.c",
   "file": "/home/ashside/CompilePrinciple/Lab/Lab1/src/SyntaxTree.c"
 },

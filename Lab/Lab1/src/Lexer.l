@@ -100,10 +100,6 @@ ERROR .
             printf("FLOAT: %s\n", yytext);
             return FLOAT;
 }
-{ID} {
-            printf("ID: %s\n", yytext);
-            return ID;
-}
 {SEMI} {
             printf("SEMI\n");
             return SEMI;
@@ -200,10 +196,7 @@ ERROR .
             printf("WHILE\n");
             return WHILE;
 }
-{ID_ERROR} {
-            fprintf(stderr, "Error: Invalid ID %s\n", yytext);
-            return ERROR;
-}
+
 {INT_ERROR} {
             fprintf(stderr, "Error: Invalid INT %s\n", yytext);
             return ERROR;
@@ -212,21 +205,16 @@ ERROR .
             fprintf(stderr, "Error: Invalid FLOAT %s\n", yytext);
             return ERROR;
 }
-{INTOCT_ERROR} {
-            fprintf(stderr, "Error: Invalid OCT %s\n", yytext);
+{ID_ERROR} {
+            fprintf(stderr, "Error: Invalid ID %s\n", yytext);
             return ERROR;
 }
-{INTHEX_ERROR} {
-            fprintf(stderr, "Error: Invalid HEX %s\n", yytext);
-            return ERROR;
-}
-{INTDEC_ERROR} {
-            fprintf(stderr, "Error: Invalid DEC %s\n", yytext);
-            return ERROR;
+{ID} {
+            printf("ID: %s\n", yytext);
+            return ID;
 }
 {ERROR} {
             fprintf(stderr, "Error: Invalid character %s\n", yytext);
             return ERROR;
 }
 %%
-
