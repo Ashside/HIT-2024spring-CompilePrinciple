@@ -3,10 +3,11 @@
 #include<stdlib.h>
 #include<string.h>
 #include "SyntaxTree.h"
+
 #include "Parse.tab.h"
 
 int yycolumn = 1;
-extern void yyerror(const char *msg, ...);
+extern void yyerror(const char *msg, int lineno,char type,const char *tokenText);
 %}
 
 %option yylineno
@@ -71,33 +72,31 @@ ERROR .
             
 }
 "/*" {
-            int depth = 1;
-            int c;
-
-            while ((c = input()) != EOF) {
-                if (c == '*') {
-                    if ((c = input()) == '/') {
-                        if (--depth == 0)
-                            break;
-                    }
-                } else if (c == '/') {
-                    if ((c = input()) == '*') {
-                        depth++;
-                    }
+        int c;
+        int startLine = yylineno;
+        while ((c = input()) != EOF) {
+            if (c == '*') {
+                if ((c = input()) == '/') {
+                    break;
+                }
+                else {
+                    unput(c);
                 }
             }
-
             if (c == EOF) {
-                fprintf(stderr, "Error: Unterminated comment\n");
+                yyerror("Unmatched comment", startLine, 'B',yytext);
+                break;
             }
         }
+            
+}
 
 {INT} {
-            printf("INT: %s\n", yytext);
+            printf("INT\n");
             return INT;
 }
 {FLOAT} {
-            printf("FLOAT: %s\n", yytext);
+            printf("FLOAT\n");
             return FLOAT;
 }
 {SEMI} {
@@ -196,25 +195,26 @@ ERROR .
             printf("WHILE\n");
             return WHILE;
 }
-
-{INT_ERROR} {
-            fprintf(stderr, "Error: Invalid INT %s\n", yytext);
-            return ERROR;
-}
-{FLOAT_ERROR} {
-            fprintf(stderr, "Error: Invalid FLOAT %s\n", yytext);
-            return ERROR;
-}
-{ID_ERROR} {
-            fprintf(stderr, "Error: Invalid ID %s\n", yytext);
-            return ERROR;
-}
 {ID} {
             printf("ID: %s\n", yytext);
             return ID;
 }
+{INT_ERROR} {
+            yyerror("Invalid INT", yylineno, 'A',yytext);
+            return ERROR;
+}
+{FLOAT_ERROR} {
+            yyerror("Invalid FLOAT", yylineno, 'A',yytext);
+            return ERROR;
+}
+
+{ID_ERROR} {
+            yyerror("Invalid ID", yylineno, 'A',yytext);
+            return ERROR;
+}
+
 {ERROR} {
-            fprintf(stderr, "Error: Invalid character %s\n", yytext);
+            yyerror("Invalid character", yylineno, 'A',yytext);
             return ERROR;
 }
 %%

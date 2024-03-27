@@ -1,10 +1,12 @@
-TYPE
-ID
+TYPE: int
+ID: main
 LP
 RP
 LC
-TYPE
-ID
+STAR
+DIV
+TYPE: int
+ID: i
 ASSIGNOP
 INT
 SEMI

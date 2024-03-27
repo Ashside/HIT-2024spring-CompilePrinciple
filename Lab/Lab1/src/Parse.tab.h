@@ -92,7 +92,7 @@ union YYSTYPE
 {
 #line 17 "Parse.y"
 
-    AstNode* parseNode;
+    AstNode parseNode;
 
 #line 98 "Parse.tab.h"
 

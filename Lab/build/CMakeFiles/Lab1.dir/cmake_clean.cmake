@@ -1,4 +1,6 @@
 file(REMOVE_RECURSE
+  "CMakeFiles/Lab1.dir/src/Parse.tab.c.o"
+  "CMakeFiles/Lab1.dir/src/Parse.tab.c.o.d"
   "CMakeFiles/Lab1.dir/src/SyntaxTree.c.o"
   "CMakeFiles/Lab1.dir/src/SyntaxTree.c.o.d"
   "CMakeFiles/Lab1.dir/src/lex.yy.c.o"

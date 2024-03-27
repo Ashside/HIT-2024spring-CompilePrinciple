@@ -1,14 +1,14 @@
-TYPE
-ID
+TYPE: int
+ID: inc
 LP
 RP
 LC
-TYPE
-ID
+TYPE: int
+ID: i
 SEMI
-ID
+ID: i
 ASSIGNOP
-ID
+ID: i
 PLUS
 INT
 SEMI

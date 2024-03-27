@@ -1,25 +1,25 @@
 STRUCT
-ID
+ID: Complex
 LC
-TYPE
-ID
+TYPE: float
+ID: real
 COMMA
-ID
+ID: image
 SEMI
 RC
 SEMI
-TYPE
-ID
+TYPE: int
+ID: main
 LP
 RP
 LC
 STRUCT
-ID
-ID
+ID: Complex
+ID: x
 SEMI
-ID
+ID: y
 DOT
-ID
+ID: image
 ASSIGNOP
 FLOAT
 SEMI

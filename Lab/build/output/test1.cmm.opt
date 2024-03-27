@@ -1,16 +1,17 @@
-TYPE
-ID
+TYPE: int
+ID: main
 LP
 RP
 LC
-TYPE
-ID
+TYPE: int
+ID: i
 ASSIGNOP
 INT
 SEMI
-TYPE
-ID
+TYPE: int
+ID: j
 ASSIGNOP
-ID
+Error type A at Line 4: Invalid character "~"
+ID: i
 SEMI
 RC

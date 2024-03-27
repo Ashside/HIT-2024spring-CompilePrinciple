@@ -1,10 +1,10 @@
-TYPE
-ID
+TYPE: int
+ID: main
 LP
 RP
 LC
-TYPE
-ID
+TYPE: float
+ID: a
 LB
 INT
 RB
@@ -12,10 +12,10 @@ LB
 INT
 RB
 SEMI
-TYPE
-ID
+TYPE: int
+ID: i
 SEMI
-ID
+ID: a
 LB
 INT
 COMMA
@@ -26,7 +26,7 @@ FLOAT
 SEMI
 IF
 LP
-ID
+ID: a
 LB
 INT
 RB
@@ -36,11 +36,11 @@ RB
 RELOP
 INT
 RP
-ID
+ID: i
 ASSIGNOP
 INT
 ELSE
-ID
+ID: i
 ASSIGNOP
 INT
 SEMI

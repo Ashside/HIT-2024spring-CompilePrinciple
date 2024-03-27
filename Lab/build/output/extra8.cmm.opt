@@ -1,12 +1,11 @@
-TYPE
-ID
+TYPE: int
+ID: main
 LP
 RP
 LC
-TYPE
-ID
+TYPE: float
+ID: i
 ASSIGNOP
-FLOAT
-ID
+Error type A at Line 3: Invalid FLOAT "1.05e"
 SEMI
 RC

@@ -6,7 +6,7 @@
 
     // 在此声明，消除yacc生成代码时的告警
     extern int yyparse(void); 
-    extern void yyerror(const char *s);
+    //extern void yyerror(const char *msg, int lineno,char type,const char *tokenText);
     int yywrap()
     {
         return 1;
@@ -15,7 +15,7 @@
 %}
 
 %union {
-    AstNode* parseNode;
+    AstNode parseNode;
 }
 
 %token <parseNode> INT
