@@ -92,4 +92,141 @@ ERROR .
             }
         }
 
+{INT} {
+            printf("INT: %s\n", yytext);
+            return INT;
+}
+{FLOAT} {
+            printf("FLOAT: %s\n", yytext);
+            return FLOAT;
+}
+{ID} {
+            printf("ID: %s\n", yytext);
+            return ID;
+}
+{SEMI} {
+            printf("SEMI\n");
+            return SEMI;
+}
+{COMMA} {
+            printf("COMMA\n");
+            return COMMA;
+}
+{ASSIGNOP} {
+            printf("ASSIGNOP\n");
+            return ASSIGNOP;
+}
+{RELOP} {
+            printf("RELOP\n");
+            return RELOP;
+}
+{PLUS} {
+            printf("PLUS\n");
+            return PLUS;
+}
+{MINUS} {
+            printf("MINUS\n");
+            return MINUS;
+}
+{STAR} {
+            printf("STAR\n");
+            return STAR;
+}
+{DIV} {
+            printf("DIV\n");
+            return DIV;
+}
+{AND} {
+            printf("AND\n");
+            return AND;
+}
+{OR} {
+            printf("OR\n");
+            return OR;
+}
+{DOT} {
+            printf("DOT\n");
+            return DOT;
+}
+{NOT} {
+            printf("NOT\n");
+            return NOT;
+}
+{TYPE} {
+            printf("TYPE: %s\n", yytext);
+            return TYPE;
+}
+{LP} {
+            printf("LP\n");
+            return LP;
+}
+{RP} {
+            printf("RP\n");
+            return RP;
+}
+{LB} {
+            printf("LB\n");
+            return LB;
+}
+{RB} {
+            printf("RB\n");
+            return RB;
+}
+{LC} {
+            printf("LC\n");
+            return LC;
+}
+{RC} {
+            printf("RC\n");
+            return RC;
+}
+{STRUCT} {
+            printf("STRUCT\n");
+            return STRUCT;
+}
+{RETURN} {
+            printf("RETURN\n");
+            return RETURN;
+}
+{IF} {
+            printf("IF\n");
+            return IF;
+}
+{ELSE} {
+            printf("ELSE\n");
+            return ELSE;
+}
+{WHILE} {
+            printf("WHILE\n");
+            return WHILE;
+}
+{ID_ERROR} {
+            fprintf(stderr, "Error: Invalid ID %s\n", yytext);
+            return ERROR;
+}
+{INT_ERROR} {
+            fprintf(stderr, "Error: Invalid INT %s\n", yytext);
+            return ERROR;
+}
+{FLOAT_ERROR} {
+            fprintf(stderr, "Error: Invalid FLOAT %s\n", yytext);
+            return ERROR;
+}
+{INTOCT_ERROR} {
+            fprintf(stderr, "Error: Invalid OCT %s\n", yytext);
+            return ERROR;
+}
+{INTHEX_ERROR} {
+            fprintf(stderr, "Error: Invalid HEX %s\n", yytext);
+            return ERROR;
+}
+{INTDEC_ERROR} {
+            fprintf(stderr, "Error: Invalid DEC %s\n", yytext);
+            return ERROR;
+}
+{ERROR} {
+            fprintf(stderr, "Error: Invalid character %s\n", yytext);
+            return ERROR;
+}
 %%
+

@@ -15,6 +15,13 @@ int main(int argc, char **argv)
             return 1;
         }
     }
-    while (yylex() != 0);
+    while (1){
+        printf("Token: %d\n", yylex());
+        if (yylex() == 0)
+        {
+            break;
+        }
+        
+    }
     return 0;
 }
