@@ -1,11 +1,12 @@
 #ifndef SYNTAXTREE_H
 #define SYNTAXTREE_H
+extern int yylineno;
 struct AstNode_s
 {
-    int token;
+    char* token;
     int lineNum;
-    int isLeaf;
-
+    int isTerminal;
+    char* val;
     struct AstNode_s *children, *brother;
     union
     {
@@ -18,13 +19,12 @@ typedef struct AstNode_s AstNode;
 
 
 
-AstNode *createNode(int symbol, int lineNum,int isLeaf,char* val);
-AstNode *initRootNode();
+AstNode *createNode(char* token, int lineNum,int isTerminal,char* val);
+//AstNode *initRootNode();
 
-void addChild(AstNode *parent, AstNode *child);
-void addBrother(AstNode *node, AstNode *brother);
+void addChild(AstNode *parent,int nums,...);
+//void addBrother(AstNode *node, AstNode *brother);
 void printTree(AstNode *root, int depth);
 void freeTree(AstNode *root);
-void printTree(AstNode *root, int depth);
 
 #endif // SYNTAXTREE_H

@@ -2,7 +2,9 @@
 #include "SyntaxTree.h"
 #include <stdlib.h>
 #include <stdio.h>
-AstNode *createNode(int token, int lineNum, int isLeaf,char * val)
+#include <string.h>
+#include <stdarg.h>
+AstNode *createNode(char *token, int lineNum, int isTerminal, char *val)
 {
     AstNode *node = (AstNode *)malloc(sizeof(AstNode));
     if (node == NULL)
@@ -12,29 +14,82 @@ AstNode *createNode(int token, int lineNum, int isLeaf,char * val)
 
     node->token = token;
     node->lineNum = lineNum;
-    node->isLeaf = isLeaf;
-    node->children = NULL;
-    node->brother = NULL;
+    node->isTerminal = isTerminal;
+    node->val = val;
+    node->children = (AstNode *)malloc(sizeof(AstNode));
+    node->brother = (AstNode *)malloc(sizeof(AstNode));
+
+    if (isTerminal)
+    {
+        if (!strcmp(token, "ID") || !strcmp(token, "TYPE"))
+        {
+            node->ID = val;
+        }
+        else if (!strcmp(token, "INT"))
+        {
+            node->intVal = atoi(val);
+        }
+        else if (!strcmp(token, "FLOAT"))
+        {
+            node->floatVal = atof(val);
+        }
+    }
 
     return node;
 }
 
-AstNode *initRootNode()
+void addChild(AstNode *parent, int nums, ...)
 {
+    va_list valist;
+    va_start(valist, nums);
+    AstNode *child = va_arg(valist, AstNode *);
+    parent->children = child;
+    AstNode *lastChild = child;
+    for (int i = 1; i < nums; i++)
+    {
+        child = va_arg(valist, AstNode *);
+        lastChild->brother = child;
+        lastChild = child;
+    }
 }
 
-void addChild(AstNode *parent, AstNode *child)
-{
-}
-
-void addBrother(AstNode *node, AstNode *brother)
-{
-}
 void freeTree(AstNode *root)
 {
+    if (root->children != NULL)
+    {
+        freeTree(root->children);
+    }
+    if (root->brother != NULL)
+    {
+        freeTree(root->brother);
+    }
+    free(root);
 }
 void printTree(AstNode *root, int level)
 {
+    if (root != NULL)
+    {
+        printf("%*c", level * 2, ' ');
+        if (!strcmp(root->token, "ID") || !strcmp(root->token, "TYPE"))
+        {
+            printf(": %s", root->ID);
+        }
+        else if (!strcmp(root->token, "INT"))
+        {
+            printf(": %d", root->intVal);
+        }
+        else if (!strcmp(root->token, "FLOAT"))
+        {
+            printf(": %f", root->floatVal);
+        }
+        else if (!root->isTerminal)
+        {
+            printf(" (%d)", root->lineNum);
+        }
+        printf("\n");
+        printTree(root->children, level + 1);
+        printTree(root->brother, level);
+    }
 }
 
 void lexError(int lineNum, char *msg, char *token)

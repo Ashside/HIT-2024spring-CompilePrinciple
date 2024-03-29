@@ -1,0 +1,6 @@
+# ninja log v5
+2	147	1711719276771139574	CMakeFiles/Lab1.dir/src/SyntaxTree.c.o	7de73d4713830963
+2	147	1711719276771139574	CMakeFiles/Lab1.dir/src/main.c.o	4f9a095b47a35506
+1	157	1711719276781139575	CMakeFiles/Lab1.dir/src/Parse.tab.c.o	12cb584a26cb2b09
+2	177	1711719276801139571	CMakeFiles/Lab1.dir/src/lex.yy.c.o	5a4f8cee6139b66e
+177	554	1711719277181139555	Lab1	8ce9750c0fb7e44d

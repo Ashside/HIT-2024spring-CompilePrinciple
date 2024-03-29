@@ -3,24 +3,24 @@
 
 extern FILE *yyin;
 extern int yylex(void);
-
+extern int yyparse(void);
+extern void yyrestart(FILE *input_file);
+extern void yyset_debug(int debug_flag);
 int main(int argc, char **argv)
 {
-    if (argc > 1)
+    if(argc<2)
     {
-        if (!(yyin = fopen(argv[1], "r")))
-        {
-            perror(argv[1]);
-            return 1;
-        }
+        fprintf(stderr, "Usage: %s <input file>\n", argv[0]);
+        return 1;
     }
-    while (1){
-        //printf("Token: %d\n", yylex());
-        if (yylex() == 0)
-        {
-            break;
-        }
-        
+    FILE* file = fopen(argv[1], "r");
+    if(file == NULL)
+    {
+        fprintf(stderr, "Error: Cannot open file %s\n", argv[1]);
+        return 1;
     }
-    return 0;
+
+    yyset_debug(0);
+    yyrestart(file);
+    yyparse();
 }

@@ -12,5 +12,5 @@ do
   filename=$(basename -- "$file")
 
   # 执行./Lab1 < 测试文件，并将结果重定向到output文件夹下的同名文件
-  ./Lab1 < "$file" > "output/$filename.opt"
+  ./Lab1 ./"$file" > "output/$filename.opt"
 done

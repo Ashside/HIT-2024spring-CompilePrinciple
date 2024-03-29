@@ -596,10 +596,9 @@ char *yytext;
 #include "Parse.tab.h"
 extern YYSTYPE yylval;
 
-int yycolumn = 1;
 extern void yyerror(const char *msg, int lineno,char type,const char *tokenText);
+#line 601 "lex.yy.c"
 #line 602 "lex.yy.c"
-#line 603 "lex.yy.c"
 
 #define INITIAL 0
 
@@ -816,9 +815,9 @@ YY_DECL
 		}
 
 	{
-#line 69 "Lexer.l"
+#line 68 "Lexer.l"
 
-#line 822 "lex.yy.c"
+#line 821 "lex.yy.c"
 
 	while ( /*CONSTCOND*/1 )		/* loops until end-of-file is reached */
 		{
@@ -888,12 +887,12 @@ do_action:	/* This label is used only to access EOF actions. */
 case 1:
 /* rule 1 can match eol */
 YY_RULE_SETUP
-#line 70 "Lexer.l"
+#line 69 "Lexer.l"
 { }
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 71 "Lexer.l"
+#line 70 "Lexer.l"
 {
             while (input() != '\n') ;
             
@@ -901,7 +900,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 75 "Lexer.l"
+#line 74 "Lexer.l"
 {
         int c;
         int startLine = yylineno;
@@ -924,10 +923,11 @@ YY_RULE_SETUP
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 95 "Lexer.l"
+#line 94 "Lexer.l"
 {
             //printf("INT\n");
-            yylval.parseNode=createNode(INT,yylineno,1,yytext);
+            yylval.parseNode=createNode("INT",yylineno,1,yytext);
+            printf("INT\n");
             return INT;
 }
 	YY_BREAK
@@ -935,237 +935,263 @@ case 5:
 YY_RULE_SETUP
 #line 100 "Lexer.l"
 {
+            yylval.parseNode=createNode("FLOAT",yylineno,1,yytext);
             printf("FLOAT\n");
             return FLOAT;
 }
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 104 "Lexer.l"
+#line 105 "Lexer.l"
 {
+            yylval.parseNode=createNode("SEMI",yylineno,1,yytext);
             printf("SEMI\n");
             return SEMI;
 }
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 108 "Lexer.l"
+#line 110 "Lexer.l"
 {
+            yylval.parseNode=createNode("COMMA",yylineno,1,yytext);
             printf("COMMA\n");
             return COMMA;
 }
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 112 "Lexer.l"
+#line 115 "Lexer.l"
 {
+            yylval.parseNode=createNode("ASSIGNOP",yylineno,1,yytext);
             printf("ASSIGNOP\n");
             return ASSIGNOP;
 }
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 116 "Lexer.l"
+#line 120 "Lexer.l"
 {
+            yylval.parseNode=createNode("RELOP",yylineno,1,yytext);
             printf("RELOP\n");
             return RELOP;
 }
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 120 "Lexer.l"
+#line 125 "Lexer.l"
 {
+            yylval.parseNode=createNode("PLUS",yylineno,1,yytext);
             printf("PLUS\n");
             return PLUS;
 }
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 124 "Lexer.l"
+#line 130 "Lexer.l"
 {
+            yylval.parseNode=createNode("MINUS",yylineno,1,yytext);
             printf("MINUS\n");
             return MINUS;
 }
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 128 "Lexer.l"
+#line 135 "Lexer.l"
 {
+            yylval.parseNode=createNode("STAR",yylineno,1,yytext);
             printf("STAR\n");
             return STAR;
 }
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 132 "Lexer.l"
+#line 140 "Lexer.l"
 {
+            yylval.parseNode=createNode("DIV",yylineno,1,yytext);
             printf("DIV\n");
             return DIV;
 }
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 136 "Lexer.l"
+#line 145 "Lexer.l"
 {
+            yylval.parseNode=createNode("AND",yylineno,1,yytext);
             printf("AND\n");
             return AND;
 }
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 140 "Lexer.l"
+#line 150 "Lexer.l"
 {
+            yylval.parseNode=createNode("OR",yylineno,1,yytext);
             printf("OR\n");
             return OR;
 }
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 144 "Lexer.l"
+#line 155 "Lexer.l"
 {
+            yylval.parseNode=createNode("DOT",yylineno,1,yytext);
             printf("DOT\n");
             return DOT;
 }
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 148 "Lexer.l"
+#line 160 "Lexer.l"
 {
+            yylval.parseNode=createNode("NOT",yylineno,1,yytext);
             printf("NOT\n");
             return NOT;
 }
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 152 "Lexer.l"
+#line 165 "Lexer.l"
 {
-            printf("TYPE: %s\n", yytext);
+            yylval.parseNode=createNode("TYPE",yylineno,1,yytext);
+            printf("TYPE\n");
             return TYPE;
 }
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 156 "Lexer.l"
+#line 170 "Lexer.l"
 {
+            yylval.parseNode=createNode("LP",yylineno,1,yytext);
             printf("LP\n");
             return LP;
 }
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 160 "Lexer.l"
+#line 175 "Lexer.l"
 {
+            yylval.parseNode=createNode("RP",yylineno,1,yytext);
             printf("RP\n");
             return RP;
 }
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 164 "Lexer.l"
+#line 180 "Lexer.l"
 {
+            yylval.parseNode=createNode("LB",yylineno,1,yytext);
             printf("LB\n");
             return LB;
 }
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 168 "Lexer.l"
+#line 185 "Lexer.l"
 {
+            yylval.parseNode=createNode("RB",yylineno,1,yytext);
             printf("RB\n");
             return RB;
 }
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 172 "Lexer.l"
+#line 190 "Lexer.l"
 {
+            yylval.parseNode=createNode("LC",yylineno,1,yytext);
             printf("LC\n");
             return LC;
 }
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 176 "Lexer.l"
+#line 195 "Lexer.l"
 {
+            yylval.parseNode=createNode("RC",yylineno,1,yytext);
             printf("RC\n");
             return RC;
 }
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 180 "Lexer.l"
+#line 200 "Lexer.l"
 {
+            yylval.parseNode=createNode("STRUCT",yylineno,1,yytext);
             printf("STRUCT\n");
             return STRUCT;
 }
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 184 "Lexer.l"
+#line 205 "Lexer.l"
 {
+            yylval.parseNode=createNode("RETURN",yylineno,1,yytext);
             printf("RETURN\n");
             return RETURN;
 }
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 188 "Lexer.l"
+#line 210 "Lexer.l"
 {
+            yylval.parseNode=createNode("IF",yylineno,1,yytext);
             printf("IF\n");
             return IF;
 }
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 192 "Lexer.l"
+#line 215 "Lexer.l"
 {
+            yylval.parseNode=createNode("ELSE",yylineno,1,yytext);
             printf("ELSE\n");
             return ELSE;
 }
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 196 "Lexer.l"
+#line 220 "Lexer.l"
 {
+            yylval.parseNode=createNode("WHILE",yylineno,1,yytext);
             printf("WHILE\n");
             return WHILE;
 }
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 200 "Lexer.l"
+#line 225 "Lexer.l"
 {
-            printf("ID: %s\n", yytext);
+            yylval.parseNode=createNode("ID",yylineno,1,yytext);
+            printf("ID\n");
             return ID;
 }
 	YY_BREAK
 case 31:
 YY_RULE_SETUP
-#line 204 "Lexer.l"
+#line 230 "Lexer.l"
 {
             yyerror("Invalid INT", yylineno, 'A',yytext);
-            return ERROR;
+            return INT_ERROR;
 }
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
-#line 208 "Lexer.l"
+#line 234 "Lexer.l"
 {
             yyerror("Invalid FLOAT", yylineno, 'A',yytext);
-            return ERROR;
+            return FLOAT_ERROR;
 }
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
-#line 213 "Lexer.l"
+#line 239 "Lexer.l"
 {
             yyerror("Invalid ID", yylineno, 'A',yytext);
-            return ERROR;
+            return ID_ERROR;
 }
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
-#line 218 "Lexer.l"
+#line 244 "Lexer.l"
 {
             yyerror("Invalid character", yylineno, 'A',yytext);
             return ERROR;
@@ -1173,10 +1199,10 @@ YY_RULE_SETUP
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
-#line 222 "Lexer.l"
+#line 248 "Lexer.l"
 ECHO;
 	YY_BREAK
-#line 1180 "lex.yy.c"
+#line 1206 "lex.yy.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -2193,5 +2219,5 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 222 "Lexer.l"
+#line 248 "Lexer.l"
 

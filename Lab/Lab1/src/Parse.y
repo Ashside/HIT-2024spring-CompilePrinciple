@@ -1,17 +1,14 @@
 %{
     //#include "lex.yy.c"
+    #include "stdio.h"
+    #include "stddef.h"
     #include "SyntaxTree.h"
-    //在lex.yy.c里定义，会被yyparse()调用。在此声明消除编译和链接错误。
+    #include "Parse.tab.h"
     extern int yylex(void); 
-
-    // 在此声明，消除yacc生成代码时的告警
     extern int yyparse(void); 
-    //extern void yyerror(const char *msg, int lineno,char type,const char *tokenText);
-    int yywrap()
-    {
-        return 1;
-    }
-    
+    extern void yyerror(const char *s);
+    int yydebug = 1;
+    AstNode* root = NULL;
 
 %}
 
@@ -46,8 +43,12 @@
 %token <parseNode> IF
 %token <parseNode> ELSE
 %token <parseNode> WHILE
+%token <parseNode> INT_ERROR
+%token <parseNode> FLOAT_ERROR
+%token <parseNode> ID_ERROR
 %token <parseNode> ERROR
 
+%token <parseNode> NOTATOKEN
 
 %type <parseNode> Program ExtDefList ExtDef ExtDecList
 %type <parseNode> Specifier StructSpecifier OptTag Tag
@@ -69,132 +70,132 @@
 %%
 // HIGH LEVEL GRAMMAR
 Program:
-    ExtDefList                      
+    ExtDefList  {printf("Hello");$$ = createNode("PROGRAM", yylineno,0," "); addChild($$,1,$1); root = $$;}                 
     ;
 
 ExtDefList:
-    ExtDef ExtDefList               
-    | /* empty */                   
+    ExtDef ExtDefList {$$ = createNode("EXTDEFLIST", yylineno,0," "); addChild($$,2,$1,$2);}       
+    | /* empty */ {$$ = createNode("EXTDEFLIST", -1 ,0," ");}                  
     ;
 
 ExtDef:
-    Specifier ExtDecList SEMI       
-    |Specifier SEMI                 
-    |Specifier FunDec CompStm       
-    |error SEMI                     
+    Specifier ExtDecList SEMI {$$ = createNode("EXTDEF", yylineno,0," "); addChild($$,3,$1,$2,$3);}      
+    |Specifier SEMI           {$$ = createNode("EXTDEF", yylineno,0," "); addChild($$,2,$1,$2);}     
+    |Specifier FunDec CompStm {$$ = createNode("EXTDEF", yylineno,0," "); addChild($$,3,$1,$2,$3);}      
+    |error SEMI               {}      
     ;
 
 ExtDecList:
-    VarDec                          
-    |VarDec COMMA ExtDecList
-        ;
+    VarDec                    {$$ = createNode("EXTDECLIST", yylineno,0," "); addChild($$,1,$1);}      
+    |VarDec COMMA ExtDecList  {$$ = createNode("EXTDECLIST", yylineno,0," "); addChild($$,3,$1,$2,$3);}
+    ;
 
 //SPECIFIER
 Specifier:
-    TYPE
-    |StructSpecifier
+    TYPE                        {$$ = createNode("SPECIFIER", yylineno,0," "); addChild($$,1,$1);}
+    |StructSpecifier            {$$ = createNode("SPECIFIER", yylineno,0," "); addChild($$,1,$1);}
     ;
 
 StructSpecifier:
-    STRUCT OptTag LC DefList RC
-    |STRUCT Tag
+    STRUCT OptTag LC DefList RC {$$ = createNode("STRUCTSPECIFIER", yylineno,0," "); addChild($$,5,$1,$2,$3,$4,$5);}
+    |STRUCT Tag                 {$$ = createNode("STRUCTSPECIFIER", yylineno,0," "); addChild($$,2,$1,$2);}
     ;
 
 OptTag:
-    ID
-    |/* empty */
+    ID                          {$$ = createNode("OPTTAG", yylineno,0," "); addChild($$,1,$1);}
+    |/* empty */                {$$ = createNode("OPTTAG", -1 ,0," ");}
     ;
 
 Tag:
-    ID
+    ID                          {$$ = createNode("TAG", yylineno,0," "); addChild($$,1,$1);}
     ;
 
 //DECLARATION
 VarDec:
-    ID
-    |VarDec LB INT RB
+    ID                          {$$ = createNode("VARDEC", yylineno,0," "); addChild($$,1,$1);}
+    |VarDec LB INT RB           {$$ = createNode("VARDEC", yylineno,0," "); addChild($$,4,$1,$2,$3,$4);}
     ;
 
 FunDec:
-    ID LP VarList RP
-    |ID LP RP
+    ID LP VarList RP            {$$ = createNode("FUNDEC", yylineno,0," "); addChild($$,4,$1,$2,$3,$4);}
+    |ID LP RP                   {$$ = createNode("FUNDEC", yylineno,0," "); addChild($$,3,$1,$2,$3);}
     ;
 
 VarList:
-    ParamDec COMMA VarList
-    |ParamDec
+    ParamDec COMMA VarList      {$$ = createNode("VARLIST", yylineno,0," "); addChild($$,3,$1,$2,$3);}
+    |ParamDec                   {$$ = createNode("VARLIST", yylineno,0," "); addChild($$,1,$1);}
     ;
 
 ParamDec:
-    Specifier VarDec
+    Specifier VarDec            {$$ = createNode("PARAMDEC", yylineno,0," "); addChild($$,2,$1,$2);}
     ;
 
 //STATEMENT
 CompStm:
-    LC DefList StmtList RC
+    LC DefList StmtList RC      {$$ = createNode("COMPSTM", yylineno,0," "); addChild($$,4,$1,$2,$3,$4);}
     ;
 
 StmtList:
-    Stmt StmtList
-    |/* empty */
+    Stmt StmtList               {$$ = createNode("STMTLIST", yylineno,0," "); addChild($$,2,$1,$2);}
+    |/* empty */                {$$ = createNode("STMTLIST", -1 ,0," ");}
     ;
 
 Stmt:
-    Exp SEMI
-    |CompStm
-    |RETURN Exp SEMI
-    |IF LP Exp RP Stmt
-    |IF LP Exp RP Stmt ELSE Stmt
-    |WHILE LP Exp RP Stmt
-    |error SEMI
+    Exp SEMI                    {$$ = createNode("STMT", yylineno,0," "); addChild($$,2,$1,$2);}
+    |CompStm                    {$$ = createNode("STMT", yylineno,0," "); addChild($$,1,$1);}
+    |RETURN Exp SEMI            {$$ = createNode("STMT", yylineno,0," "); addChild($$,3,$1,$2,$3);}
+    |IF LP Exp RP Stmt          {$$ = createNode("STMT", yylineno,0," "); addChild($$,4,$1,$2,$3,$4);}
+    |IF LP Exp RP Stmt ELSE Stmt    {$$ = createNode("STMT", yylineno,0," "); addChild($$,6,$1,$2,$3,$4,$5,$6);}
+    |WHILE LP Exp RP Stmt       {$$ = createNode("STMT", yylineno,0," "); addChild($$,5,$1,$2,$3,$4,$5);}
+    |error SEMI                 {}
     ;
 
 //LOCAL DEFINITION
 DefList:
-    Def DefList
-    |/* empty */
+    Def DefList                 {$$ = createNode("DEFLIST", yylineno,0," "); addChild($$,2,$1,$2);}
+    |/* empty */                {$$ = createNode("DEFLIST", -1 ,0," ");}
     ;
 
 Def:
-    Specifier DecList SEMI
+    Specifier DecList SEMI      {$$ = createNode("DEF", yylineno,0," "); addChild($$,3,$1,$2,$3);}
     ;
 
 DecList:
-    Dec
-    |Dec COMMA DecList
+    Dec                         {$$ = createNode("DECLIST", yylineno,0," "); addChild($$,1,$1);}
+    |Dec COMMA DecList          {$$ = createNode("DECLIST", yylineno,0," "); addChild($$,3,$1,$2,$3);}
     ;
 
 Dec:
-    VarDec
-    |VarDec ASSIGNOP Exp
+    VarDec                      {$$ = createNode("DEC", yylineno,0," "); addChild($$,1,$1);}
+    |VarDec ASSIGNOP Exp        {$$ = createNode("DEC", yylineno,0," "); addChild($$,3,$1,$2,$3);}
     ;
 
 //EXPRESSION
 
 Exp:
-    Exp ASSIGNOP Exp
-    |Exp AND Exp
-    |Exp OR Exp
-    |Exp RELOP Exp
-    |Exp PLUS Exp
-    |Exp MINUS Exp
-    |Exp STAR Exp
-    |Exp DIV Exp
-    |LP Exp RP
-    |MINUS Exp
-    |NOT Exp
-    |ID LP Args RP
-    |ID LP RP
-    |Exp LB Exp RB
-    |Exp DOT ID
-    |ID
-    |INT
-    |FLOAT
+    Exp ASSIGNOP Exp            {$$ = createNode("EXP", yylineno,0," "); addChild($$,3,$1,$2,$3);}
+    |Exp AND Exp                {$$ = createNode("EXP", yylineno,0," "); addChild($$,3,$1,$2,$3);}
+    |Exp OR Exp                 {$$ = createNode("EXP", yylineno,0," "); addChild($$,3,$1,$2,$3);}
+    |Exp RELOP Exp            {$$ = createNode("EXP", yylineno,0," "); addChild($$,3,$1,$2,$3);}
+    |Exp PLUS Exp            {$$ = createNode("EXP", yylineno,0," "); addChild($$,3,$1,$2,$3);}
+    |Exp MINUS Exp          {$$ = createNode("EXP", yylineno,0," "); addChild($$,3,$1,$2,$3);}
+    |Exp STAR Exp           {$$ = createNode("EXP", yylineno,0," "); addChild($$,3,$1,$2,$3);}
+    |Exp DIV Exp            {$$ = createNode("EXP", yylineno,0," "); addChild($$,3,$1,$2,$3);}
+    |LP Exp RP              {$$ = createNode("EXP", yylineno,0," "); addChild($$,3,$1,$2,$3);}
+    |MINUS Exp              {$$ = createNode("EXP", yylineno,0," "); addChild($$,2,$1,$2);}
+    |NOT Exp                {$$ = createNode("EXP", yylineno,0," "); addChild($$,2,$1,$2);}
+    |ID LP Args RP          {$$ = createNode("EXP", yylineno,0," "); addChild($$,4,$1,$2,$3,$4);}
+    |ID LP RP               {$$ = createNode("EXP", yylineno,0," "); addChild($$,3,$1,$2,$3);}
+    |Exp LB Exp RB          {$$ = createNode("EXP", yylineno,0," "); addChild($$,4,$1,$2,$3,$4);}
+    |Exp DOT ID             {$$ = createNode("EXP", yylineno,0," "); addChild($$,3,$1,$2,$3);}
+    |ID                     {$$ = createNode("EXP", yylineno,0," "); addChild($$,1,$1);}
+    |INT                    {$$ = createNode("EXP", yylineno,0," "); addChild($$,1,$1);}
+    |FLOAT                  {$$ = createNode("EXP", yylineno,0," "); addChild($$,1,$1);}
     ;
 
 Args:
-    Exp COMMA Args
-    |Exp
+    Exp COMMA Args          {$$ = createNode("ARGS", yylineno,0," "); addChild($$,3,$1,$2,$3);}
+    |Exp                    {$$ = createNode("ARGS", yylineno,0," "); addChild($$,1,$1);}
     ;
 
 %%

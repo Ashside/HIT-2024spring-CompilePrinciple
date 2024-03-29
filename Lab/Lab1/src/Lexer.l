@@ -7,7 +7,6 @@
 #include "Parse.tab.h"
 extern YYSTYPE yylval;
 
-int yycolumn = 1;
 extern void yyerror(const char *msg, int lineno,char type,const char *tokenText);
 %}
 
@@ -94,125 +93,152 @@ ERROR .
 
 {INT} {
             //printf("INT\n");
-            yylval.parseNode=createNode(INT,yylineno,1,yytext);
+            yylval.parseNode=createNode("INT",yylineno,1,yytext);
+            printf("INT\n");
             return INT;
 }
 {FLOAT} {
+            yylval.parseNode=createNode("FLOAT",yylineno,1,yytext);
             printf("FLOAT\n");
             return FLOAT;
 }
 {SEMI} {
+            yylval.parseNode=createNode("SEMI",yylineno,1,yytext);
             printf("SEMI\n");
             return SEMI;
 }
 {COMMA} {
+            yylval.parseNode=createNode("COMMA",yylineno,1,yytext);
             printf("COMMA\n");
             return COMMA;
 }
 {ASSIGNOP} {
+            yylval.parseNode=createNode("ASSIGNOP",yylineno,1,yytext);
             printf("ASSIGNOP\n");
             return ASSIGNOP;
 }
 {RELOP} {
+            yylval.parseNode=createNode("RELOP",yylineno,1,yytext);
             printf("RELOP\n");
             return RELOP;
 }
 {PLUS} {
+            yylval.parseNode=createNode("PLUS",yylineno,1,yytext);
             printf("PLUS\n");
             return PLUS;
 }
 {MINUS} {
+            yylval.parseNode=createNode("MINUS",yylineno,1,yytext);
             printf("MINUS\n");
             return MINUS;
 }
 {STAR} {
+            yylval.parseNode=createNode("STAR",yylineno,1,yytext);
             printf("STAR\n");
             return STAR;
 }
 {DIV} {
+            yylval.parseNode=createNode("DIV",yylineno,1,yytext);
             printf("DIV\n");
             return DIV;
 }
 {AND} {
+            yylval.parseNode=createNode("AND",yylineno,1,yytext);
             printf("AND\n");
             return AND;
 }
 {OR} {
+            yylval.parseNode=createNode("OR",yylineno,1,yytext);
             printf("OR\n");
             return OR;
 }
 {DOT} {
+            yylval.parseNode=createNode("DOT",yylineno,1,yytext);
             printf("DOT\n");
             return DOT;
 }
 {NOT} {
+            yylval.parseNode=createNode("NOT",yylineno,1,yytext);
             printf("NOT\n");
             return NOT;
 }
 {TYPE} {
-            printf("TYPE: %s\n", yytext);
+            yylval.parseNode=createNode("TYPE",yylineno,1,yytext);
+            printf("TYPE\n");
             return TYPE;
 }
 {LP} {
+            yylval.parseNode=createNode("LP",yylineno,1,yytext);
             printf("LP\n");
             return LP;
 }
 {RP} {
+            yylval.parseNode=createNode("RP",yylineno,1,yytext);
             printf("RP\n");
             return RP;
 }
 {LB} {
+            yylval.parseNode=createNode("LB",yylineno,1,yytext);
             printf("LB\n");
             return LB;
 }
 {RB} {
+            yylval.parseNode=createNode("RB",yylineno,1,yytext);
             printf("RB\n");
             return RB;
 }
 {LC} {
+            yylval.parseNode=createNode("LC",yylineno,1,yytext);
             printf("LC\n");
             return LC;
 }
 {RC} {
+            yylval.parseNode=createNode("RC",yylineno,1,yytext);
             printf("RC\n");
             return RC;
 }
 {STRUCT} {
+            yylval.parseNode=createNode("STRUCT",yylineno,1,yytext);
             printf("STRUCT\n");
             return STRUCT;
 }
 {RETURN} {
+            yylval.parseNode=createNode("RETURN",yylineno,1,yytext);
             printf("RETURN\n");
             return RETURN;
 }
 {IF} {
+            yylval.parseNode=createNode("IF",yylineno,1,yytext);
             printf("IF\n");
             return IF;
 }
 {ELSE} {
+            yylval.parseNode=createNode("ELSE",yylineno,1,yytext);
             printf("ELSE\n");
             return ELSE;
 }
 {WHILE} {
+            yylval.parseNode=createNode("WHILE",yylineno,1,yytext);
             printf("WHILE\n");
             return WHILE;
 }
 {ID} {
-            printf("ID: %s\n", yytext);
+            yylval.parseNode=createNode("ID",yylineno,1,yytext);
+            printf("ID\n");
             return ID;
 }
 {INT_ERROR} {
             yyerror("Invalid INT", yylineno, 'A',yytext);
-            return ERROR;
+            return INT_ERROR;
 }
 {FLOAT_ERROR} {
             yyerror("Invalid FLOAT", yylineno, 'A',yytext);
-            return ERROR;
+            return FLOAT_ERROR;
 }
 
 {ID_ERROR} {
             yyerror("Invalid ID", yylineno, 'A',yytext);
-            return ERROR;
+            return ID_ERROR;
 }
 
 {ERROR} {

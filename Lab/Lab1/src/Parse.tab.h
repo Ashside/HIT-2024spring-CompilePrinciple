@@ -81,7 +81,11 @@ extern int yydebug;
     IF = 282,                      /* IF  */
     ELSE = 283,                    /* ELSE  */
     WHILE = 284,                   /* WHILE  */
-    ERROR = 285                    /* ERROR  */
+    INT_ERROR = 285,               /* INT_ERROR  */
+    FLOAT_ERROR = 286,             /* FLOAT_ERROR  */
+    ID_ERROR = 287,                /* ID_ERROR  */
+    ERROR = 288,                   /* ERROR  */
+    NOTATOKEN = 289                /* NOTATOKEN  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -90,11 +94,11 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 18 "Parse.y"
+#line 15 "Parse.y"
 
     AstNode* parseNode;
 
-#line 98 "Parse.tab.h"
+#line 102 "Parse.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;

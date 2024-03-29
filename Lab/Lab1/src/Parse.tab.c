@@ -70,21 +70,18 @@
 #line 1 "Parse.y"
 
     //#include "lex.yy.c"
+    #include "stdio.h"
+    #include "stddef.h"
     #include "SyntaxTree.h"
-    //在lex.yy.c里定义，会被yyparse()调用。在此声明消除编译和链接错误。
+    #include "Parse.tab.h"
     extern int yylex(void); 
-
-    // 在此声明，消除yacc生成代码时的告警
     extern int yyparse(void); 
-    //extern void yyerror(const char *msg, int lineno,char type,const char *tokenText);
-    int yywrap()
-    {
-        return 1;
-    }
-    
+    extern void yyerror(const char *s);
+    int yydebug = 1;
+    AstNode* root = NULL;
 
 
-#line 88 "Parse.tab.c"
+#line 85 "Parse.tab.c"
 
 # ifndef YY_CAST
 #  ifdef __cplusplus
@@ -142,29 +139,33 @@ enum yysymbol_kind_t
   YYSYMBOL_IF = 27,                        /* IF  */
   YYSYMBOL_ELSE = 28,                      /* ELSE  */
   YYSYMBOL_WHILE = 29,                     /* WHILE  */
-  YYSYMBOL_ERROR = 30,                     /* ERROR  */
-  YYSYMBOL_YYACCEPT = 31,                  /* $accept  */
-  YYSYMBOL_Program = 32,                   /* Program  */
-  YYSYMBOL_ExtDefList = 33,                /* ExtDefList  */
-  YYSYMBOL_ExtDef = 34,                    /* ExtDef  */
-  YYSYMBOL_ExtDecList = 35,                /* ExtDecList  */
-  YYSYMBOL_Specifier = 36,                 /* Specifier  */
-  YYSYMBOL_StructSpecifier = 37,           /* StructSpecifier  */
-  YYSYMBOL_OptTag = 38,                    /* OptTag  */
-  YYSYMBOL_Tag = 39,                       /* Tag  */
-  YYSYMBOL_VarDec = 40,                    /* VarDec  */
-  YYSYMBOL_FunDec = 41,                    /* FunDec  */
-  YYSYMBOL_VarList = 42,                   /* VarList  */
-  YYSYMBOL_ParamDec = 43,                  /* ParamDec  */
-  YYSYMBOL_CompStm = 44,                   /* CompStm  */
-  YYSYMBOL_StmtList = 45,                  /* StmtList  */
-  YYSYMBOL_Stmt = 46,                      /* Stmt  */
-  YYSYMBOL_DefList = 47,                   /* DefList  */
-  YYSYMBOL_Def = 48,                       /* Def  */
-  YYSYMBOL_DecList = 49,                   /* DecList  */
-  YYSYMBOL_Dec = 50,                       /* Dec  */
-  YYSYMBOL_Exp = 51,                       /* Exp  */
-  YYSYMBOL_Args = 52                       /* Args  */
+  YYSYMBOL_INT_ERROR = 30,                 /* INT_ERROR  */
+  YYSYMBOL_FLOAT_ERROR = 31,               /* FLOAT_ERROR  */
+  YYSYMBOL_ID_ERROR = 32,                  /* ID_ERROR  */
+  YYSYMBOL_ERROR = 33,                     /* ERROR  */
+  YYSYMBOL_NOTATOKEN = 34,                 /* NOTATOKEN  */
+  YYSYMBOL_YYACCEPT = 35,                  /* $accept  */
+  YYSYMBOL_Program = 36,                   /* Program  */
+  YYSYMBOL_ExtDefList = 37,                /* ExtDefList  */
+  YYSYMBOL_ExtDef = 38,                    /* ExtDef  */
+  YYSYMBOL_ExtDecList = 39,                /* ExtDecList  */
+  YYSYMBOL_Specifier = 40,                 /* Specifier  */
+  YYSYMBOL_StructSpecifier = 41,           /* StructSpecifier  */
+  YYSYMBOL_OptTag = 42,                    /* OptTag  */
+  YYSYMBOL_Tag = 43,                       /* Tag  */
+  YYSYMBOL_VarDec = 44,                    /* VarDec  */
+  YYSYMBOL_FunDec = 45,                    /* FunDec  */
+  YYSYMBOL_VarList = 46,                   /* VarList  */
+  YYSYMBOL_ParamDec = 47,                  /* ParamDec  */
+  YYSYMBOL_CompStm = 48,                   /* CompStm  */
+  YYSYMBOL_StmtList = 49,                  /* StmtList  */
+  YYSYMBOL_Stmt = 50,                      /* Stmt  */
+  YYSYMBOL_DefList = 51,                   /* DefList  */
+  YYSYMBOL_Def = 52,                       /* Def  */
+  YYSYMBOL_DecList = 53,                   /* DecList  */
+  YYSYMBOL_Dec = 54,                       /* Dec  */
+  YYSYMBOL_Exp = 55,                       /* Exp  */
+  YYSYMBOL_Args = 56                       /* Args  */
 };
 typedef enum yysymbol_kind_t yysymbol_kind_t;
 
@@ -495,7 +496,7 @@ union yyalloc
 #define YYLAST   241
 
 /* YYNTOKENS -- Number of terminals.  */
-#define YYNTOKENS  31
+#define YYNTOKENS  35
 /* YYNNTS -- Number of nonterminals.  */
 #define YYNNTS  22
 /* YYNRULES -- Number of rules.  */
@@ -504,7 +505,7 @@ union yyalloc
 #define YYNSTATES  115
 
 /* YYMAXUTOK -- Last valid token kind.  */
-#define YYMAXUTOK   285
+#define YYMAXUTOK   289
 
 
 /* YYTRANSLATE(TOKEN-NUM) -- Symbol number corresponding to TOKEN-NUM
@@ -546,20 +547,20 @@ static const yytype_int8 yytranslate[] =
        2,     2,     2,     2,     2,     2,     1,     2,     3,     4,
        5,     6,     7,     8,     9,    10,    11,    12,    13,    14,
       15,    16,    17,    18,    19,    20,    21,    22,    23,    24,
-      25,    26,    27,    28,    29,    30
+      25,    26,    27,    28,    29,    30,    31,    32,    33,    34
 };
 
 #if YYDEBUG
 /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_uint8 yyrline[] =
 {
-       0,    72,    72,    76,    77,    81,    82,    83,    84,    88,
-      89,    94,    95,    99,   100,   104,   105,   109,   114,   115,
-     119,   120,   124,   125,   129,   134,   138,   139,   143,   144,
-     145,   146,   147,   148,   149,   154,   155,   159,   163,   164,
-     168,   169,   175,   176,   177,   178,   179,   180,   181,   182,
-     183,   184,   185,   186,   187,   188,   189,   190,   191,   192,
-     196,   197
+       0,    73,    73,    77,    78,    82,    83,    84,    85,    89,
+      90,    95,    96,   100,   101,   105,   106,   110,   115,   116,
+     120,   121,   125,   126,   130,   135,   139,   140,   144,   145,
+     146,   147,   148,   149,   150,   155,   156,   160,   164,   165,
+     169,   170,   176,   177,   178,   179,   180,   181,   182,   183,
+     184,   185,   186,   187,   188,   189,   190,   191,   192,   193,
+     197,   198
 };
 #endif
 
@@ -578,10 +579,11 @@ static const char *const yytname[] =
   "\"end of file\"", "error", "\"invalid token\"", "INT", "FLOAT", "ID",
   "SEMI", "COMMA", "ASSIGNOP", "PLUS", "MINUS", "STAR", "DIV", "AND", "OR",
   "DOT", "NOT", "RELOP", "LP", "RP", "LB", "RB", "LC", "RC", "TYPE",
-  "STRUCT", "RETURN", "IF", "ELSE", "WHILE", "ERROR", "$accept", "Program",
-  "ExtDefList", "ExtDef", "ExtDecList", "Specifier", "StructSpecifier",
-  "OptTag", "Tag", "VarDec", "FunDec", "VarList", "ParamDec", "CompStm",
-  "StmtList", "Stmt", "DefList", "Def", "DecList", "Dec", "Exp", "Args", YY_NULLPTR
+  "STRUCT", "RETURN", "IF", "ELSE", "WHILE", "INT_ERROR", "FLOAT_ERROR",
+  "ID_ERROR", "ERROR", "NOTATOKEN", "$accept", "Program", "ExtDefList",
+  "ExtDef", "ExtDecList", "Specifier", "StructSpecifier", "OptTag", "Tag",
+  "VarDec", "FunDec", "VarList", "ParamDec", "CompStm", "StmtList", "Stmt",
+  "DefList", "Def", "DecList", "Dec", "Exp", "Args", YY_NULLPTR
 };
 
 static const char *
@@ -719,30 +721,30 @@ static const yytype_int8 yycheck[] =
    state STATE-NUM.  */
 static const yytype_int8 yystos[] =
 {
-       0,     1,    24,    25,    32,    33,    34,    36,    37,     6,
-       5,    38,    39,     0,    33,     5,     6,    35,    40,    41,
-      22,    18,     6,     7,    20,    22,    44,    36,    47,    48,
-      19,    36,    42,    43,     5,    35,     3,    47,    40,    49,
-      50,    23,    47,    40,    19,     7,    21,     1,     3,     4,
-       5,    10,    16,    18,    26,    27,    29,    44,    45,    46,
-      51,     8,     6,     7,    42,     6,    18,    51,    51,    51,
-      51,    18,    18,    23,    45,     6,     8,     9,    10,    11,
-      12,    13,    14,    15,    17,    20,    51,    49,    19,    51,
-      52,    19,     6,    51,    51,    51,    51,    51,    51,    51,
-      51,    51,     5,    51,    51,     7,    19,    19,    19,    21,
-      52,    46,    46,    28,    46
+       0,     1,    24,    25,    36,    37,    38,    40,    41,     6,
+       5,    42,    43,     0,    37,     5,     6,    39,    44,    45,
+      22,    18,     6,     7,    20,    22,    48,    40,    51,    52,
+      19,    40,    46,    47,     5,    39,     3,    51,    44,    53,
+      54,    23,    51,    44,    19,     7,    21,     1,     3,     4,
+       5,    10,    16,    18,    26,    27,    29,    48,    49,    50,
+      55,     8,     6,     7,    46,     6,    18,    55,    55,    55,
+      55,    18,    18,    23,    49,     6,     8,     9,    10,    11,
+      12,    13,    14,    15,    17,    20,    55,    53,    19,    55,
+      56,    19,     6,    55,    55,    55,    55,    55,    55,    55,
+      55,    55,     5,    55,    55,     7,    19,    19,    19,    21,
+      56,    50,    50,    28,    50
 };
 
 /* YYR1[RULE-NUM] -- Symbol kind of the left-hand side of rule RULE-NUM.  */
 static const yytype_int8 yyr1[] =
 {
-       0,    31,    32,    33,    33,    34,    34,    34,    34,    35,
-      35,    36,    36,    37,    37,    38,    38,    39,    40,    40,
-      41,    41,    42,    42,    43,    44,    45,    45,    46,    46,
-      46,    46,    46,    46,    46,    47,    47,    48,    49,    49,
-      50,    50,    51,    51,    51,    51,    51,    51,    51,    51,
-      51,    51,    51,    51,    51,    51,    51,    51,    51,    51,
-      52,    52
+       0,    35,    36,    37,    37,    38,    38,    38,    38,    39,
+      39,    40,    40,    41,    41,    42,    42,    43,    44,    44,
+      45,    45,    46,    46,    47,    48,    49,    49,    50,    50,
+      50,    50,    50,    50,    50,    51,    51,    52,    53,    53,
+      54,    54,    55,    55,    55,    55,    55,    55,    55,    55,
+      55,    55,    55,    55,    55,    55,    55,    55,    55,    55,
+      56,    56
 };
 
 /* YYR2[RULE-NUM] -- Number of symbols on the right-hand side of rule RULE-NUM.  */
@@ -1217,8 +1219,368 @@ yyreduce:
   YY_REDUCE_PRINT (yyn);
   switch (yyn)
     {
+  case 2: /* Program: ExtDefList  */
+#line 73 "Parse.y"
+                {printf("Hello");(yyval.parseNode) = createNode("PROGRAM", yylineno,0," "); addChild((yyval.parseNode),1,(yyvsp[0].parseNode)); root = (yyval.parseNode);}
+#line 1226 "Parse.tab.c"
+    break;
 
-#line 1222 "Parse.tab.c"
+  case 3: /* ExtDefList: ExtDef ExtDefList  */
+#line 77 "Parse.y"
+                      {(yyval.parseNode) = createNode("EXTDEFLIST", yylineno,0," "); addChild((yyval.parseNode),2,(yyvsp[-1].parseNode),(yyvsp[0].parseNode));}
+#line 1232 "Parse.tab.c"
+    break;
+
+  case 4: /* ExtDefList: %empty  */
+#line 78 "Parse.y"
+                  {(yyval.parseNode) = createNode("EXTDEFLIST", -1 ,0," ");}
+#line 1238 "Parse.tab.c"
+    break;
+
+  case 5: /* ExtDef: Specifier ExtDecList SEMI  */
+#line 82 "Parse.y"
+                              {(yyval.parseNode) = createNode("EXTDEF", yylineno,0," "); addChild((yyval.parseNode),3,(yyvsp[-2].parseNode),(yyvsp[-1].parseNode),(yyvsp[0].parseNode));}
+#line 1244 "Parse.tab.c"
+    break;
+
+  case 6: /* ExtDef: Specifier SEMI  */
+#line 83 "Parse.y"
+                              {(yyval.parseNode) = createNode("EXTDEF", yylineno,0," "); addChild((yyval.parseNode),2,(yyvsp[-1].parseNode),(yyvsp[0].parseNode));}
+#line 1250 "Parse.tab.c"
+    break;
+
+  case 7: /* ExtDef: Specifier FunDec CompStm  */
+#line 84 "Parse.y"
+                              {(yyval.parseNode) = createNode("EXTDEF", yylineno,0," "); addChild((yyval.parseNode),3,(yyvsp[-2].parseNode),(yyvsp[-1].parseNode),(yyvsp[0].parseNode));}
+#line 1256 "Parse.tab.c"
+    break;
+
+  case 8: /* ExtDef: error SEMI  */
+#line 85 "Parse.y"
+                              {}
+#line 1262 "Parse.tab.c"
+    break;
+
+  case 9: /* ExtDecList: VarDec  */
+#line 89 "Parse.y"
+                              {(yyval.parseNode) = createNode("EXTDECLIST", yylineno,0," "); addChild((yyval.parseNode),1,(yyvsp[0].parseNode));}
+#line 1268 "Parse.tab.c"
+    break;
+
+  case 10: /* ExtDecList: VarDec COMMA ExtDecList  */
+#line 90 "Parse.y"
+                              {(yyval.parseNode) = createNode("EXTDECLIST", yylineno,0," "); addChild((yyval.parseNode),3,(yyvsp[-2].parseNode),(yyvsp[-1].parseNode),(yyvsp[0].parseNode));}
+#line 1274 "Parse.tab.c"
+    break;
+
+  case 11: /* Specifier: TYPE  */
+#line 95 "Parse.y"
+                                {(yyval.parseNode) = createNode("SPECIFIER", yylineno,0," "); addChild((yyval.parseNode),1,(yyvsp[0].parseNode));}
+#line 1280 "Parse.tab.c"
+    break;
+
+  case 12: /* Specifier: StructSpecifier  */
+#line 96 "Parse.y"
+                                {(yyval.parseNode) = createNode("SPECIFIER", yylineno,0," "); addChild((yyval.parseNode),1,(yyvsp[0].parseNode));}
+#line 1286 "Parse.tab.c"
+    break;
+
+  case 13: /* StructSpecifier: STRUCT OptTag LC DefList RC  */
+#line 100 "Parse.y"
+                                {(yyval.parseNode) = createNode("STRUCTSPECIFIER", yylineno,0," "); addChild((yyval.parseNode),5,(yyvsp[-4].parseNode),(yyvsp[-3].parseNode),(yyvsp[-2].parseNode),(yyvsp[-1].parseNode),(yyvsp[0].parseNode));}
+#line 1292 "Parse.tab.c"
+    break;
+
+  case 14: /* StructSpecifier: STRUCT Tag  */
+#line 101 "Parse.y"
+                                {(yyval.parseNode) = createNode("STRUCTSPECIFIER", yylineno,0," "); addChild((yyval.parseNode),2,(yyvsp[-1].parseNode),(yyvsp[0].parseNode));}
+#line 1298 "Parse.tab.c"
+    break;
+
+  case 15: /* OptTag: ID  */
+#line 105 "Parse.y"
+                                {(yyval.parseNode) = createNode("OPTTAG", yylineno,0," "); addChild((yyval.parseNode),1,(yyvsp[0].parseNode));}
+#line 1304 "Parse.tab.c"
+    break;
+
+  case 16: /* OptTag: %empty  */
+#line 106 "Parse.y"
+                                {(yyval.parseNode) = createNode("OPTTAG", -1 ,0," ");}
+#line 1310 "Parse.tab.c"
+    break;
+
+  case 17: /* Tag: ID  */
+#line 110 "Parse.y"
+                                {(yyval.parseNode) = createNode("TAG", yylineno,0," "); addChild((yyval.parseNode),1,(yyvsp[0].parseNode));}
+#line 1316 "Parse.tab.c"
+    break;
+
+  case 18: /* VarDec: ID  */
+#line 115 "Parse.y"
+                                {(yyval.parseNode) = createNode("VARDEC", yylineno,0," "); addChild((yyval.parseNode),1,(yyvsp[0].parseNode));}
+#line 1322 "Parse.tab.c"
+    break;
+
+  case 19: /* VarDec: VarDec LB INT RB  */
+#line 116 "Parse.y"
+                                {(yyval.parseNode) = createNode("VARDEC", yylineno,0," "); addChild((yyval.parseNode),4,(yyvsp[-3].parseNode),(yyvsp[-2].parseNode),(yyvsp[-1].parseNode),(yyvsp[0].parseNode));}
+#line 1328 "Parse.tab.c"
+    break;
+
+  case 20: /* FunDec: ID LP VarList RP  */
+#line 120 "Parse.y"
+                                {(yyval.parseNode) = createNode("FUNDEC", yylineno,0," "); addChild((yyval.parseNode),4,(yyvsp[-3].parseNode),(yyvsp[-2].parseNode),(yyvsp[-1].parseNode),(yyvsp[0].parseNode));}
+#line 1334 "Parse.tab.c"
+    break;
+
+  case 21: /* FunDec: ID LP RP  */
+#line 121 "Parse.y"
+                                {(yyval.parseNode) = createNode("FUNDEC", yylineno,0," "); addChild((yyval.parseNode),3,(yyvsp[-2].parseNode),(yyvsp[-1].parseNode),(yyvsp[0].parseNode));}
+#line 1340 "Parse.tab.c"
+    break;
+
+  case 22: /* VarList: ParamDec COMMA VarList  */
+#line 125 "Parse.y"
+                                {(yyval.parseNode) = createNode("VARLIST", yylineno,0," "); addChild((yyval.parseNode),3,(yyvsp[-2].parseNode),(yyvsp[-1].parseNode),(yyvsp[0].parseNode));}
+#line 1346 "Parse.tab.c"
+    break;
+
+  case 23: /* VarList: ParamDec  */
+#line 126 "Parse.y"
+                                {(yyval.parseNode) = createNode("VARLIST", yylineno,0," "); addChild((yyval.parseNode),1,(yyvsp[0].parseNode));}
+#line 1352 "Parse.tab.c"
+    break;
+
+  case 24: /* ParamDec: Specifier VarDec  */
+#line 130 "Parse.y"
+                                {(yyval.parseNode) = createNode("PARAMDEC", yylineno,0," "); addChild((yyval.parseNode),2,(yyvsp[-1].parseNode),(yyvsp[0].parseNode));}
+#line 1358 "Parse.tab.c"
+    break;
+
+  case 25: /* CompStm: LC DefList StmtList RC  */
+#line 135 "Parse.y"
+                                {(yyval.parseNode) = createNode("COMPSTM", yylineno,0," "); addChild((yyval.parseNode),4,(yyvsp[-3].parseNode),(yyvsp[-2].parseNode),(yyvsp[-1].parseNode),(yyvsp[0].parseNode));}
+#line 1364 "Parse.tab.c"
+    break;
+
+  case 26: /* StmtList: Stmt StmtList  */
+#line 139 "Parse.y"
+                                {(yyval.parseNode) = createNode("STMTLIST", yylineno,0," "); addChild((yyval.parseNode),2,(yyvsp[-1].parseNode),(yyvsp[0].parseNode));}
+#line 1370 "Parse.tab.c"
+    break;
+
+  case 27: /* StmtList: %empty  */
+#line 140 "Parse.y"
+                                {(yyval.parseNode) = createNode("STMTLIST", -1 ,0," ");}
+#line 1376 "Parse.tab.c"
+    break;
+
+  case 28: /* Stmt: Exp SEMI  */
+#line 144 "Parse.y"
+                                {(yyval.parseNode) = createNode("STMT", yylineno,0," "); addChild((yyval.parseNode),2,(yyvsp[-1].parseNode),(yyvsp[0].parseNode));}
+#line 1382 "Parse.tab.c"
+    break;
+
+  case 29: /* Stmt: CompStm  */
+#line 145 "Parse.y"
+                                {(yyval.parseNode) = createNode("STMT", yylineno,0," "); addChild((yyval.parseNode),1,(yyvsp[0].parseNode));}
+#line 1388 "Parse.tab.c"
+    break;
+
+  case 30: /* Stmt: RETURN Exp SEMI  */
+#line 146 "Parse.y"
+                                {(yyval.parseNode) = createNode("STMT", yylineno,0," "); addChild((yyval.parseNode),3,(yyvsp[-2].parseNode),(yyvsp[-1].parseNode),(yyvsp[0].parseNode));}
+#line 1394 "Parse.tab.c"
+    break;
+
+  case 31: /* Stmt: IF LP Exp RP Stmt  */
+#line 147 "Parse.y"
+                                {(yyval.parseNode) = createNode("STMT", yylineno,0," "); addChild((yyval.parseNode),4,(yyvsp[-4].parseNode),(yyvsp[-3].parseNode),(yyvsp[-2].parseNode),(yyvsp[-1].parseNode));}
+#line 1400 "Parse.tab.c"
+    break;
+
+  case 32: /* Stmt: IF LP Exp RP Stmt ELSE Stmt  */
+#line 148 "Parse.y"
+                                    {(yyval.parseNode) = createNode("STMT", yylineno,0," "); addChild((yyval.parseNode),6,(yyvsp[-6].parseNode),(yyvsp[-5].parseNode),(yyvsp[-4].parseNode),(yyvsp[-3].parseNode),(yyvsp[-2].parseNode),(yyvsp[-1].parseNode));}
+#line 1406 "Parse.tab.c"
+    break;
+
+  case 33: /* Stmt: WHILE LP Exp RP Stmt  */
+#line 149 "Parse.y"
+                                {(yyval.parseNode) = createNode("STMT", yylineno,0," "); addChild((yyval.parseNode),5,(yyvsp[-4].parseNode),(yyvsp[-3].parseNode),(yyvsp[-2].parseNode),(yyvsp[-1].parseNode),(yyvsp[0].parseNode));}
+#line 1412 "Parse.tab.c"
+    break;
+
+  case 34: /* Stmt: error SEMI  */
+#line 150 "Parse.y"
+                                {}
+#line 1418 "Parse.tab.c"
+    break;
+
+  case 35: /* DefList: Def DefList  */
+#line 155 "Parse.y"
+                                {(yyval.parseNode) = createNode("DEFLIST", yylineno,0," "); addChild((yyval.parseNode),2,(yyvsp[-1].parseNode),(yyvsp[0].parseNode));}
+#line 1424 "Parse.tab.c"
+    break;
+
+  case 36: /* DefList: %empty  */
+#line 156 "Parse.y"
+                                {(yyval.parseNode) = createNode("DEFLIST", -1 ,0," ");}
+#line 1430 "Parse.tab.c"
+    break;
+
+  case 37: /* Def: Specifier DecList SEMI  */
+#line 160 "Parse.y"
+                                {(yyval.parseNode) = createNode("DEF", yylineno,0," "); addChild((yyval.parseNode),3,(yyvsp[-2].parseNode),(yyvsp[-1].parseNode),(yyvsp[0].parseNode));}
+#line 1436 "Parse.tab.c"
+    break;
+
+  case 38: /* DecList: Dec  */
+#line 164 "Parse.y"
+                                {(yyval.parseNode) = createNode("DECLIST", yylineno,0," "); addChild((yyval.parseNode),1,(yyvsp[0].parseNode));}
+#line 1442 "Parse.tab.c"
+    break;
+
+  case 39: /* DecList: Dec COMMA DecList  */
+#line 165 "Parse.y"
+                                {(yyval.parseNode) = createNode("DECLIST", yylineno,0," "); addChild((yyval.parseNode),3,(yyvsp[-2].parseNode),(yyvsp[-1].parseNode),(yyvsp[0].parseNode));}
+#line 1448 "Parse.tab.c"
+    break;
+
+  case 40: /* Dec: VarDec  */
+#line 169 "Parse.y"
+                                {(yyval.parseNode) = createNode("DEC", yylineno,0," "); addChild((yyval.parseNode),1,(yyvsp[0].parseNode));}
+#line 1454 "Parse.tab.c"
+    break;
+
+  case 41: /* Dec: VarDec ASSIGNOP Exp  */
+#line 170 "Parse.y"
+                                {(yyval.parseNode) = createNode("DEC", yylineno,0," "); addChild((yyval.parseNode),3,(yyvsp[-2].parseNode),(yyvsp[-1].parseNode),(yyvsp[0].parseNode));}
+#line 1460 "Parse.tab.c"
+    break;
+
+  case 42: /* Exp: Exp ASSIGNOP Exp  */
+#line 176 "Parse.y"
+                                {(yyval.parseNode) = createNode("EXP", yylineno,0," "); addChild((yyval.parseNode),3,(yyvsp[-2].parseNode),(yyvsp[-1].parseNode),(yyvsp[0].parseNode));}
+#line 1466 "Parse.tab.c"
+    break;
+
+  case 43: /* Exp: Exp AND Exp  */
+#line 177 "Parse.y"
+                                {(yyval.parseNode) = createNode("EXP", yylineno,0," "); addChild((yyval.parseNode),3,(yyvsp[-2].parseNode),(yyvsp[-1].parseNode),(yyvsp[0].parseNode));}
+#line 1472 "Parse.tab.c"
+    break;
+
+  case 44: /* Exp: Exp OR Exp  */
+#line 178 "Parse.y"
+                                {(yyval.parseNode) = createNode("EXP", yylineno,0," "); addChild((yyval.parseNode),3,(yyvsp[-2].parseNode),(yyvsp[-1].parseNode),(yyvsp[0].parseNode));}
+#line 1478 "Parse.tab.c"
+    break;
+
+  case 45: /* Exp: Exp RELOP Exp  */
+#line 179 "Parse.y"
+                              {(yyval.parseNode) = createNode("EXP", yylineno,0," "); addChild((yyval.parseNode),3,(yyvsp[-2].parseNode),(yyvsp[-1].parseNode),(yyvsp[0].parseNode));}
+#line 1484 "Parse.tab.c"
+    break;
+
+  case 46: /* Exp: Exp PLUS Exp  */
+#line 180 "Parse.y"
+                             {(yyval.parseNode) = createNode("EXP", yylineno,0," "); addChild((yyval.parseNode),3,(yyvsp[-2].parseNode),(yyvsp[-1].parseNode),(yyvsp[0].parseNode));}
+#line 1490 "Parse.tab.c"
+    break;
+
+  case 47: /* Exp: Exp MINUS Exp  */
+#line 181 "Parse.y"
+                            {(yyval.parseNode) = createNode("EXP", yylineno,0," "); addChild((yyval.parseNode),3,(yyvsp[-2].parseNode),(yyvsp[-1].parseNode),(yyvsp[0].parseNode));}
+#line 1496 "Parse.tab.c"
+    break;
+
+  case 48: /* Exp: Exp STAR Exp  */
+#line 182 "Parse.y"
+                            {(yyval.parseNode) = createNode("EXP", yylineno,0," "); addChild((yyval.parseNode),3,(yyvsp[-2].parseNode),(yyvsp[-1].parseNode),(yyvsp[0].parseNode));}
+#line 1502 "Parse.tab.c"
+    break;
+
+  case 49: /* Exp: Exp DIV Exp  */
+#line 183 "Parse.y"
+                            {(yyval.parseNode) = createNode("EXP", yylineno,0," "); addChild((yyval.parseNode),3,(yyvsp[-2].parseNode),(yyvsp[-1].parseNode),(yyvsp[0].parseNode));}
+#line 1508 "Parse.tab.c"
+    break;
+
+  case 50: /* Exp: LP Exp RP  */
+#line 184 "Parse.y"
+                            {(yyval.parseNode) = createNode("EXP", yylineno,0," "); addChild((yyval.parseNode),3,(yyvsp[-2].parseNode),(yyvsp[-1].parseNode),(yyvsp[0].parseNode));}
+#line 1514 "Parse.tab.c"
+    break;
+
+  case 51: /* Exp: MINUS Exp  */
+#line 185 "Parse.y"
+                            {(yyval.parseNode) = createNode("EXP", yylineno,0," "); addChild((yyval.parseNode),2,(yyvsp[-1].parseNode),(yyvsp[0].parseNode));}
+#line 1520 "Parse.tab.c"
+    break;
+
+  case 52: /* Exp: NOT Exp  */
+#line 186 "Parse.y"
+                            {(yyval.parseNode) = createNode("EXP", yylineno,0," "); addChild((yyval.parseNode),2,(yyvsp[-1].parseNode),(yyvsp[0].parseNode));}
+#line 1526 "Parse.tab.c"
+    break;
+
+  case 53: /* Exp: ID LP Args RP  */
+#line 187 "Parse.y"
+                            {(yyval.parseNode) = createNode("EXP", yylineno,0," "); addChild((yyval.parseNode),4,(yyvsp[-3].parseNode),(yyvsp[-2].parseNode),(yyvsp[-1].parseNode),(yyvsp[0].parseNode));}
+#line 1532 "Parse.tab.c"
+    break;
+
+  case 54: /* Exp: ID LP RP  */
+#line 188 "Parse.y"
+                            {(yyval.parseNode) = createNode("EXP", yylineno,0," "); addChild((yyval.parseNode),3,(yyvsp[-2].parseNode),(yyvsp[-1].parseNode),(yyvsp[0].parseNode));}
+#line 1538 "Parse.tab.c"
+    break;
+
+  case 55: /* Exp: Exp LB Exp RB  */
+#line 189 "Parse.y"
+                            {(yyval.parseNode) = createNode("EXP", yylineno,0," "); addChild((yyval.parseNode),4,(yyvsp[-3].parseNode),(yyvsp[-2].parseNode),(yyvsp[-1].parseNode),(yyvsp[0].parseNode));}
+#line 1544 "Parse.tab.c"
+    break;
+
+  case 56: /* Exp: Exp DOT ID  */
+#line 190 "Parse.y"
+                            {(yyval.parseNode) = createNode("EXP", yylineno,0," "); addChild((yyval.parseNode),3,(yyvsp[-2].parseNode),(yyvsp[-1].parseNode),(yyvsp[0].parseNode));}
+#line 1550 "Parse.tab.c"
+    break;
+
+  case 57: /* Exp: ID  */
+#line 191 "Parse.y"
+                            {(yyval.parseNode) = createNode("EXP", yylineno,0," "); addChild((yyval.parseNode),1,(yyvsp[0].parseNode));}
+#line 1556 "Parse.tab.c"
+    break;
+
+  case 58: /* Exp: INT  */
+#line 192 "Parse.y"
+                            {(yyval.parseNode) = createNode("EXP", yylineno,0," "); addChild((yyval.parseNode),1,(yyvsp[0].parseNode));}
+#line 1562 "Parse.tab.c"
+    break;
+
+  case 59: /* Exp: FLOAT  */
+#line 193 "Parse.y"
+                            {(yyval.parseNode) = createNode("EXP", yylineno,0," "); addChild((yyval.parseNode),1,(yyvsp[0].parseNode));}
+#line 1568 "Parse.tab.c"
+    break;
+
+  case 60: /* Args: Exp COMMA Args  */
+#line 197 "Parse.y"
+                            {(yyval.parseNode) = createNode("ARGS", yylineno,0," "); addChild((yyval.parseNode),3,(yyvsp[-2].parseNode),(yyvsp[-1].parseNode),(yyvsp[0].parseNode));}
+#line 1574 "Parse.tab.c"
+    break;
+
+  case 61: /* Args: Exp  */
+#line 198 "Parse.y"
+                            {(yyval.parseNode) = createNode("ARGS", yylineno,0," "); addChild((yyval.parseNode),1,(yyvsp[0].parseNode));}
+#line 1580 "Parse.tab.c"
+    break;
+
+
+#line 1584 "Parse.tab.c"
 
       default: break;
     }
@@ -1411,4 +1773,4 @@ yyreturnlab:
   return yyresult;
 }
 
-#line 200 "Parse.y"
+#line 201 "Parse.y"
