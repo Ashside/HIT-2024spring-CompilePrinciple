@@ -1,4 +1,0 @@
-/home/ashside/CompilePrinciple/Lab/Lab1/cmake-build-debug/CMakeFiles/RunMakefile.dir
-/home/ashside/CompilePrinciple/Lab/Lab1/cmake-build-debug/CMakeFiles/Lab1.dir
-/home/ashside/CompilePrinciple/Lab/Lab1/cmake-build-debug/CMakeFiles/edit_cache.dir
-/home/ashside/CompilePrinciple/Lab/Lab1/cmake-build-debug/CMakeFiles/rebuild_cache.dir
