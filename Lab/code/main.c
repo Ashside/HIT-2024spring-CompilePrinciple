@@ -7,8 +7,8 @@ extern int yylineno;
 extern int yyparse();
 extern void yyrestart(FILE*);
 
-unsigned LexError = FALSE;
-unsigned SynError = FALSE;
+int LexError = FALSE;
+int SynError = FALSE;
 
 int main(int argc, char** argv) {
 	if (argc <= 1) {

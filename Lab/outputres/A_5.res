@@ -1,1 +1,0 @@
-Error type B at line 3: syntax error.

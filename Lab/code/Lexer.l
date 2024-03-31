@@ -2,7 +2,7 @@
 #include "SyntaxTree.h"
 #include "Parse.tab.h"
 
-extern unsigned LexError;
+extern int LexError;
 
 int lines = 0;
 int yycolumn = 1;
@@ -20,6 +20,14 @@ int yycolumn = 1;
 
 SPACE [ \t]
 ENTER [\n]
+
+COMMENT_BLK_START [/][*]
+COMMENT_BLK_END [*][/]
+COMMENT_NOT_STAR [^*]
+COMMENT_BLK {COMMENT_BLK_START}{COMMENT_NOT_STAR}*[*]+([^*/][^*]*[*]+)*[/]
+
+
+/**/
 
 INTOCT [+-]?0[0-7]+ 
 INTHEX [+-]?0[xX][0-9a-fA-F]+
@@ -79,26 +87,10 @@ ERROR .
             while (input() != '\n') ;
             
 }
-"/*" {
-        int c;
-        int startLine = yylineno;
-        while ((c = input()) != EOF) {
-            if (c == '*') {
-                if ((c = input()) == '/') {
-                    break;
-                }
-                else {
-                    unput(c);
-                }
-            }
-            if (c == EOF) {
-                printf("Error type B at Line %d: Unterminated comment\n", startLine);
-                break;
-            }
-        }
-            
-}
 
+{COMMENT_BLK} {/*give up solving nested comment*/ }
+{COMMENT_BLK_START} {printf("Error type B at Line %d: Unclosed comment.\n", yylineno);}
+{COMMENT_BLK_END} {printf("Error type B at Line %d: Unexpected comment end.\n", yylineno);}
 
 
 {IF} {
@@ -251,10 +243,17 @@ ERROR .
             return FLOAT;
 }
 
-{ID_ERROR} {
+{INTOCT_ERROR} {
             LexError = TRUE;
-            printf("Error type A at Line %d: Invalid identifier \"%s\".\n", yylineno, yytext);
-            //return ERROR;
+            printf("Error type A at Line %d: Invalid OCT integer \"%s\".\n", yylineno, yytext);
+}
+{INTHEX_ERROR} {
+            LexError = TRUE;
+            printf("Error type A at Line %d: Invalid HEX integer \"%s\".\n", yylineno, yytext);
+}
+{INTDEC_ERROR} {
+            LexError = TRUE;
+            printf("Error type A at Line %d: Invalid DEC integer \"%s\".\n", yylineno, yytext);
 }
 {INT_ERROR} {
             LexError = TRUE;
@@ -264,6 +263,11 @@ ERROR .
 {FLOAT_ERROR} {
             LexError = TRUE;
             printf("Error type A at Line %d: Invalid float \"%s\".\n", yylineno, yytext);
+            //return ERROR;
+}
+{ID_ERROR} {
+            LexError = TRUE;
+            printf("Error type A at Line %d: Invalid identifier \"%s\".\n", yylineno, yytext);
             //return ERROR;
 }
 {ERROR} {

@@ -24,6 +24,7 @@ NodePtr newTokenNode(TokenTypeEnum type, int line, char *name, char *value)
 	assert(node->value != NULL);
 
 	//TODO: check if malloc fails
+	//TODO: wild pointer error casusing segmentation fault
 	strncpy(node->name, name, nameLen + 1);
 	strncpy(node->value, value, valueLen + 1);
 
