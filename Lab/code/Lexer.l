@@ -1,3 +1,4 @@
+
 %{
 #include "SyntaxTree.h"
 #include "Parse.tab.h"
@@ -16,7 +17,7 @@ int yycolumn = 1;
 %}
 
 %option yylineno
-
+%option nounput
 
 SPACE [ \t]
 ENTER [\n]
@@ -69,6 +70,12 @@ IF if
 ELSE else
 WHILE while
 
+/*
+* ID_ERROR: starts with a digit
+* INTOCT_ERROR: invalid octal number
+* INTHEX_ERROR: invalid hex number
+* INTDEC_ERROR: invalid decimal number
+*/
 
 ID_ERROR [0-9][a-zA-Z0-9_]* 
 INTOCT_ERROR [+-]?0[0-7]*[89][0-9]* 
@@ -88,7 +95,7 @@ ERROR .
             
 }
 
-{COMMENT_BLK} {/*give up solving nested comment*/ }
+{COMMENT_BLK} {/*depreacate with solving nested comment*/ }
 {COMMENT_BLK_START} {printf("Error type B at Line %d: Unclosed comment.\n", yylineno);}
 {COMMENT_BLK_END} {printf("Error type B at Line %d: Unexpected comment end.\n", yylineno);}
 
@@ -246,6 +253,7 @@ ERROR .
 {INTOCT_ERROR} {
             LexError = TRUE;
             printf("Error type A at Line %d: Invalid OCT integer \"%s\".\n", yylineno, yytext);
+            
 }
 {INTHEX_ERROR} {
             LexError = TRUE;
@@ -254,11 +262,6 @@ ERROR .
 {INTDEC_ERROR} {
             LexError = TRUE;
             printf("Error type A at Line %d: Invalid DEC integer \"%s\".\n", yylineno, yytext);
-}
-{INT_ERROR} {
-            LexError = TRUE;
-            printf("Error type A at Line %d: Invalid integer \"%s\".\n", yylineno, yytext);
-            //return ERROR;
 }
 {FLOAT_ERROR} {
             LexError = TRUE;
@@ -276,3 +279,9 @@ ERROR .
             //return ERROR;
 }
 %%
+
+void lex_error() {
+    //continue to input until encounter a semi
+    while (input() != ';') ;
+    LexError = TRUE;
+}

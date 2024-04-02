@@ -6,6 +6,7 @@ CFLAGS = -Wall -g
 
 # Bison生成的文件
 BISON_FILE = Parse.tab.c
+BISON_OUTPUT = Parse.output
 BISON_HEADER = Parse.tab.h
 BISON_SRC = Parse.y
 
@@ -25,8 +26,8 @@ HDRS = $(wildcard *.h)
 $(TARGET): $(SRCS) $(HDRS) $(BISON_FILE) $(BISON_HEADER) $(FLEX_FILE)
 	$(CC) $(CFLAGS) -o $(TARGET) $(SRCS) $(BISON_FILE) -lfl -ly
 # Bison规则
-$(BISON_FILE) $(BISON_HEADER): $(BISON_SRC)
-	bison -d $(BISON_SRC)
+$(BISON_FILE) $(BISON_HEADER) $(BISON_OUTPUT): $(BISON_SRC)
+	bison -d -v $(BISON_SRC)
 
 # Flex规则
 $(FLEX_FILE): $(FLEX_SRC)
@@ -36,4 +37,4 @@ $(FLEX_FILE): $(FLEX_SRC)
 .PHONY: clean test
 # 清理规则
 clean:
-	rm -f $(BISON_FILE) $(BISON_HEADER) $(FLEX_FILE) $(TARGET)
+	rm -f $(BISON_FILE) $(BISON_HEADER) $(BISON_OUTPUT) $(FLEX_FILE) $(TARGET)

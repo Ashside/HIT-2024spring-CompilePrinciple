@@ -14,11 +14,11 @@ mkdir outputres
 
 
 # 遍历testcases目录下的所有文件，逐个执行
-# 结果输出到outputres目录下，文件名为testcase的文件名去掉.cmm后缀后加上.res后缀
+# 结果输出到outputres目录下
 for file in testcases/*
 do
 	echo "Running $file"
-	./code/parser $file > outputres/$(basename $file .cmm).res
+	./code/parser $file > outputres/$(basename $file .cmm).result
 done
 
 # 清理现场

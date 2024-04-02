@@ -5,7 +5,7 @@
 
     //TODO: add to elimate warnings
     extern int yylex();
-    extern void yyerror(char* msg);
+    extern void yyerror(const char* msg);
 
     // report syntax error
     extern int SynError;
@@ -13,8 +13,8 @@
     // root of ast declared here
     NodePtr RootNode;
 %}
-
-%error-verbose
+%locations
+%define parse.error verbose
 // yylval union
 %union{
     NodePtr node; 
@@ -166,6 +166,6 @@ Args : Exp COMMA Args { $$ = newParseNode(TOKEN_NOTTOKEN, @$.first_line, "Args",
 
 %%
 
-void yyerror(char* msg){
-    printf("Error type B at line %d: %s.\n", yylineno, msg);
+void yyerror(const char* msg){
+    printf("Error type B at Line %d Column %d: %s.\n", yylineno,yycolumn, msg);
 }
