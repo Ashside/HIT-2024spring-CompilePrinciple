@@ -4,6 +4,8 @@
 #include "Parse.tab.h"
 
 extern int LexError;
+/*Depreacted*/
+void lex_error();
 
 int lines = 0;
 int yycolumn = 1;
@@ -280,6 +282,7 @@ ERROR .
 }
 %%
 
+/*Depreacted*/
 void lex_error() {
     //continue to input until encounter a semi
     while (input() != ';') ;

@@ -16,7 +16,6 @@ FLEX_SRC = Lexer.l
 
 # 目标文件
 TARGET = parser
-
 # 源文件
 SRCS = $(wildcard *.c)
 HDRS = $(wildcard *.h)
