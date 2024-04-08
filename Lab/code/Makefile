@@ -14,11 +14,18 @@ BISON_SRC = Parse.y
 FLEX_FILE = lex.yy.c
 FLEX_SRC = Lexer.l
 
+# 语义分析文件
+SEMANTIC_FILE = semantic.c
+SEMANTIC_HEADER = semantic.h
+
 # 目标文件
 TARGET = parser
-# 源文件
+
+# 源文件，排除语义分析文件
 SRCS = $(wildcard *.c)
 HDRS = $(wildcard *.h)
+SRCS := $(filter-out $(SEMANTIC_FILE), $(SRCS))
+HDRS := $(filter-out $(SEMANTIC_HEADER), $(HDRS))
 
 # 编译规则
 # TODO不能加入lex.yy.c，因为flex会生成一个main函数，同时造成重复定义

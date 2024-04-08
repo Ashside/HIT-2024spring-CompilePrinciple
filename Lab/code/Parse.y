@@ -13,7 +13,7 @@
     // root of ast declared here
     NodePtr RootNode;
 
-    int yydebug = 1;
+    //int yydebug = 1;
 %}
 %locations
 %define parse.error verbose
