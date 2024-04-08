@@ -26,7 +26,7 @@ $(TARGET): $(SRCS) $(HDRS) $(BISON_FILE) $(BISON_HEADER) $(FLEX_FILE)
 	$(CC) $(CFLAGS) -o $(TARGET) $(SRCS) $(BISON_FILE) -lfl -ly
 # Bison规则
 $(BISON_FILE) $(BISON_HEADER) $(BISON_OUTPUT): $(BISON_SRC)
-	bison -d -v $(BISON_SRC)
+	bison -d -v -t $(BISON_SRC)
 
 # Flex规则
 $(FLEX_FILE): $(FLEX_SRC)

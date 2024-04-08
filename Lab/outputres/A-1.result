@@ -1,0 +1,2 @@
+Error type A at Line 3: Invalid character "@".
+Error type B at Line 3 Column 14: syntax error, unexpected INT, expecting SEMI.

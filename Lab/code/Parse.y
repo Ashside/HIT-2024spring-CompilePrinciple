@@ -12,6 +12,8 @@
 
     // root of ast declared here
     NodePtr RootNode;
+
+    int yydebug = 1;
 %}
 %locations
 %define parse.error verbose
@@ -65,7 +67,6 @@ ExtDefList: ExtDef ExtDefList { $$ = newParseNode(TOKEN_NOTTOKEN,@$.first_line, 
 ExtDef: Specifier ExtDecList SEMI { $$ = newParseNode(TOKEN_NOTTOKEN,@$.first_line, "ExtDef", 3, $1, $2, $3); }
 | Specifier SEMI { $$ = newParseNode(TOKEN_NOTTOKEN,@$.first_line, "ExtDef", 2, $1, $2); }
 | Specifier FunDec CompSt { $$ = newParseNode(TOKEN_NOTTOKEN,@$.first_line, "ExtDef", 3, $1, $2, $3); }
-| error SEMI { SynError = TRUE; }
 ;
 
 ExtDecList: VarDec { $$ = newParseNode(TOKEN_NOTTOKEN,@$.first_line, "ExtDecList", 1, $1); }
@@ -91,12 +92,12 @@ Tag: ID { $$ = newParseNode(TOKEN_NOTTOKEN,@$.first_line, "Tag", 1, $1); }
 // Declarators
 VarDec: ID { $$ = newParseNode(TOKEN_NOTTOKEN,@$.first_line, "VarDec", 1, $1); }
 | VarDec LB INT RB { $$ = newParseNode(TOKEN_NOTTOKEN,@$.first_line, "VarDec", 4, $1, $2, $3, $4); }
-| error RB { SynError = TRUE; }
+| error RB { SynError = TRUE; yyerrok;}
 ;
 
 FunDec: ID LP VarList RP { $$ = newParseNode(TOKEN_NOTTOKEN,@$.first_line, "FunDec", 4, $1, $2, $3, $4); }
 | ID LP RP { $$ = newParseNode(TOKEN_NOTTOKEN,@$.first_line, "FunDec", 3, $1, $2, $3); }
-| error RP { SynError = TRUE; }
+| error RP { SynError = TRUE; yyerrok;}
 ;
 
 VarList: ParamDec COMMA VarList { $$ = newParseNode(TOKEN_NOTTOKEN,@$.first_line, "VarList", 3, $1, $2, $3); }
@@ -107,7 +108,7 @@ ParamDec: Specifier VarDec { $$ = newParseNode(TOKEN_NOTTOKEN,@$.first_line, "Pa
 
 // Statements
 CompSt: LC DefList StmtList RC { $$ = newParseNode(TOKEN_NOTTOKEN,@$.first_line, "CompSt", 4, $1, $2, $3, $4); }
-| error RC { SynError = TRUE; }
+| error RC { SynError = TRUE; yyerrok;}
 ;
 
 StmtList: Stmt StmtList { $$ = newParseNode(TOKEN_NOTTOKEN,@$.first_line, "StmtList", 2, $1, $2); }
@@ -120,7 +121,7 @@ Stmt: Exp SEMI { $$ = newParseNode(TOKEN_NOTTOKEN,@$.first_line, "Stmt", 2, $1, 
 | IF LP Exp RP Stmt %prec LOWER_THAN_ELSE { $$ = newParseNode(TOKEN_NOTTOKEN,@$.first_line, "Stmt", 5, $1, $2, $3, $4, $5); }
 | IF LP Exp RP Stmt ELSE Stmt { $$ = newParseNode(TOKEN_NOTTOKEN,@$.first_line, "Stmt", 7, $1, $2, $3, $4, $5, $6, $7); }
 | WHILE LP Exp RP Stmt { $$ = newParseNode(TOKEN_NOTTOKEN,@$.first_line, "Stmt", 5, $1, $2, $3, $4, $5); }
-| error SEMI { SynError = TRUE; }
+| error SEMI { SynError = TRUE; yyerrok;}
 ;
 
 // Local Definitions
@@ -158,6 +159,7 @@ Exp: Exp ASSIGNOP Exp { $$ = newParseNode(TOKEN_NOTTOKEN, @$.first_line, "Exp", 
 | ID { $$ = newParseNode(TOKEN_NOTTOKEN, @$.first_line, "Exp", 1, $1); }
 | INT { $$ = newParseNode(TOKEN_NOTTOKEN, @$.first_line, "Exp", 1, $1); }
 | FLOAT { $$ = newParseNode(TOKEN_NOTTOKEN, @$.first_line, "Exp", 1, $1); }
+| error RP{ SynError = TRUE; yyerrok;}
 ;
 
 Args : Exp COMMA Args { $$ = newParseNode(TOKEN_NOTTOKEN, @$.first_line, "Args", 3, $1, $2, $3); }

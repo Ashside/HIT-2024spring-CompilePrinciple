@@ -1,0 +1,2 @@
+Error type A at Line 2: Invalid float "0.114514e".
+Error type B at Line 4 Column 33: syntax error, unexpected FLOAT, expecting ID.

@@ -1,0 +1,2 @@
+Error type A at Line 6: Invalid DEC integer "3c".
+Error type B at Line 6 Column 9: syntax error, unexpected INT, expecting ID.

@@ -1,0 +1,6 @@
+Error type A at Line 3: Invalid character "~".
+Error type A at Line 4: Invalid float "1.05e".
+Error type A at Line 5: Invalid OCT integer "09".
+Error type A at Line 6: Invalid HEX integer "0x3G".
+Error type A at Line 7: Invalid identifier "1i_".
+Error type B at Line 10 Column 2: syntax error, unexpected RC, expecting SEMI.

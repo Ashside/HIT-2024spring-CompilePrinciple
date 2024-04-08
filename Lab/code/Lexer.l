@@ -4,6 +4,7 @@
 #include "Parse.tab.h"
 
 extern int LexError;
+extern int SynError;
 /*Depreacted*/
 void lex_error();
 
@@ -97,9 +98,9 @@ ERROR .
             
 }
 
-{COMMENT_BLK} {/*depreacate with solving nested comment*/ }
-{COMMENT_BLK_START} {printf("Error type B at Line %d: Unclosed comment.\n", yylineno);}
-{COMMENT_BLK_END} {printf("Error type B at Line %d: Unexpected comment end.\n", yylineno);}
+{COMMENT_BLK} { }
+{COMMENT_BLK_START} {SynError=TRUE;printf("Error type B at Line %d: Unclosed comment.\n", yylineno);}
+{COMMENT_BLK_END} {SynError=TRUE;printf("Error type B at Line %d: Unexpected comment end. Check if comment nested.\n", yylineno);}
 
 
 {IF} {
@@ -255,36 +256,40 @@ ERROR .
 {INTOCT_ERROR} {
             LexError = TRUE;
             printf("Error type A at Line %d: Invalid OCT integer \"%s\".\n", yylineno, yytext);
+            return INT;
             
 }
 {INTHEX_ERROR} {
             LexError = TRUE;
             printf("Error type A at Line %d: Invalid HEX integer \"%s\".\n", yylineno, yytext);
+            return INT;
 }
 {INTDEC_ERROR} {
             LexError = TRUE;
             printf("Error type A at Line %d: Invalid DEC integer \"%s\".\n", yylineno, yytext);
+            return INT;
 }
 {FLOAT_ERROR} {
             LexError = TRUE;
             printf("Error type A at Line %d: Invalid float \"%s\".\n", yylineno, yytext);
+            return FLOAT;
             //return ERROR;
 }
 {ID_ERROR} {
             LexError = TRUE;
             printf("Error type A at Line %d: Invalid identifier \"%s\".\n", yylineno, yytext);
+            return ID;
             //return ERROR;
 }
 {ERROR} {
             LexError = TRUE;
             printf("Error type A at Line %d: Invalid character \"%s\".\n", yylineno, yytext);
+            
             //return ERROR;
 }
 %%
 
 /*Depreacted*/
 void lex_error() {
-    //continue to input until encounter a semi
-    while (input() != ';') ;
     LexError = TRUE;
 }
