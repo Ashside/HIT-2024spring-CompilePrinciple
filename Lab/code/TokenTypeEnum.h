@@ -2,10 +2,12 @@
 #define TOKEN_TYPE_ENUM_H
 
 /*
-* TokenTypeEnum
-* According to print principle
-*/
-typedef enum _TokenTypeEnum {
+ * TokenTypeEnum
+ * 根据词法分析的结果，将词法单元的类型进行分类
+ * 主要依据是实验指导书中的打印要求
+ */
+typedef enum _TokenTypeEnum
+{
 	TOKEN_INT,
 	TOKEN_FLOAT,
 	TOKEN_ID,

@@ -1,16 +1,17 @@
+
 %{
     #include<stdio.h>
     #include"SyntaxTree.h"
     #include"lex.yy.c"
 
-    //TODO: add to elimate warnings
+    //TODO: 消除warning
     extern int yylex();
     extern void yyerror(const char* msg);
 
-    // report syntax error
+    // 上报错误
     extern int SynError;
 
-    // root of ast declared here
+    // 语法树根节点
     NodePtr RootNode;
 
     //int yydebug = 1;
@@ -22,7 +23,7 @@
     NodePtr node; 
 }
 
-// terminals
+// 终结符
 %token <node> INT FLOAT ID
 %token <node> IF ELSE WHILE TYPE STRUCT RETURN
 %token <node> RELOP
@@ -32,7 +33,7 @@
 
 
 
-// non-terminals
+// 非终结符
 
 %type <node> Program ExtDefList ExtDef ExtDecList   //  High-level Definitions
 %type <node> Specifier StructSpecifier OptTag Tag   //  Specifiers
@@ -41,7 +42,9 @@
 %type <node> DefList Def Dec DecList                //  Local Definitions
 %type <node> Exp Args                               //  Expressions
 
-// precedence and associativity
+// 优先级和结合性，根据指导书修改
+// 优先级从高到低
+
 
 %right ASSIGNOP
 %left OR

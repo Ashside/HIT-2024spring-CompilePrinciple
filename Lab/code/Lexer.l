@@ -3,14 +3,16 @@
 #include "SyntaxTree.h"
 #include "Parse.tab.h"
 
+/* 导入报错标志 */
 extern int LexError;
 extern int SynError;
-/*Depreacted*/
+/*弃用*/
 void lex_error();
 
-int lines = 0;
 int yycolumn = 1;
 
+
+/* 词法分析器的输入函数 */
 #define YY_USER_ACTION \
     yylloc.first_line=yylloc.last_line=yylineno; \
     yylloc.first_column=yycolumn; \
@@ -25,19 +27,37 @@ int yycolumn = 1;
 SPACE [ \t]
 ENTER [\n]
 
+/*
+* 块注释
+* 以\/\*开头，以\*\/结尾
+* 不可以嵌套
+* 思路是匹配最近的一组\/\*和\*\/，中间的内容不管，可以有多个*，但是不能有/，否则认为是嵌套
+* 用COMMENT_BLK_START匹配\/\*，用COMMENT_BLK_END匹配*\/，用COMMENT_NOT_STAR匹配不是*的字符
+* ([^*\/][^*]*[*]+)*表示不是*\/的字符，或者是*但是后面不是/的字符
+*/
+
 COMMENT_BLK_START [/][*]
 COMMENT_BLK_END [*][/]
 COMMENT_NOT_STAR [^*]
 COMMENT_BLK {COMMENT_BLK_START}{COMMENT_NOT_STAR}*[*]+([^*/][^*]*[*]+)*[/]
 
 
-/**/
+/*
+* 整型数
+* 
+*/
 
 INTOCT [+-]?0[0-7]+ 
 INTHEX [+-]?0[xX][0-9a-fA-F]+
 INTDEC [+-]?(0|[1-9][0-9]*)
 INT {INTDEC}|{INTOCT}|{INTHEX}
 
+/*
+* 浮点数
+* 十进制数.任意位数数字
+* 或者 +-?基数E+-?指数
+* 基数可以没有整数部分，所以不是INTDEC
+*/
 BASENUM [0-9]+\.[0-9]*|[0-9]*\.[0-9]* 
 FLOAT ({INTDEC}\.[0-9]+)|(([+-]?{BASENUM})[Ee][+-]?[0-9]+)
 
@@ -74,10 +94,13 @@ ELSE else
 WHILE while
 
 /*
-* ID_ERROR: starts with a digit
-* INTOCT_ERROR: invalid octal number
-* INTHEX_ERROR: invalid hex number
-* INTDEC_ERROR: invalid decimal number
+* ID_ERROR: 以数字开头的标识符
+* INTOCT_ERROR: 出现8或9的八进制数
+* INTHEX_ERROR: 出现g-z或G-Z的十六进制数
+* INTDEC_ERROR: 出现字母的十进制数
+* FLOAT_ERROR: 浮点数错误，包括
+*   1. 小数部分后面有字母（此处在已匹配浮点之后处理，不需要再处理e的情况）
+*   2. 指数部分后面有字母
 */
 
 ID_ERROR [0-9][a-zA-Z0-9_]* 

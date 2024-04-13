@@ -25,9 +25,9 @@ typedef Node* NodePtr;
 
 NodePtr newTokenNode(TokenTypeEnum type, int line, char *name, char *value);
 NodePtr newParseNode(TokenTypeEnum type, int line, char *name, int numChildren, ...);
-/*addChild Deprecated*/
+/*addChild 弃用*/
 void addChild(NodePtr parent, NodePtr child);
-/*addSibling Deprecated*/
+/*addSibling 弃用*/
 void addSibling(NodePtr node, NodePtr sibling);
 void freeNode(NodePtr node);
 void freeTree(NodePtr node);

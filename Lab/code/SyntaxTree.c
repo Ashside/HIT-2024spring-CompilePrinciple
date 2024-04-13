@@ -1,3 +1,4 @@
+
 #include "SyntaxTree.h"
 
 //#define DEBUG_NEW_NODES
@@ -23,8 +24,8 @@ NodePtr newTokenNode(TokenTypeEnum type, int line, char *name, char *value)
 	assert(node->name != NULL);
 	assert(node->value != NULL);
 
-	//TODO: check if malloc fails
-	//TODO: wild pointer error casusing ***segmentation fault***
+	//TODO: 检查是否有内存泄漏
+	//TODO: 野指针导致段错误
 	strncpy(node->name, name, nameLen + 1);
 	strncpy(node->value, value, valueLen + 1);
 
