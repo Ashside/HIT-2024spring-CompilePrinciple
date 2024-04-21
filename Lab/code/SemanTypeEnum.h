@@ -21,6 +21,7 @@ typedef enum _ErrorTypeEnum
 	RE_DEFINED_SCOPE,	   // 结构体中域名重复定义（指同一结构体中），或在定义时对域进行初始化
 	RE_DEFINED_STRUCT,	   // 结构体名字重复定义
 	NOT_DEFINED_STRUCT,	   // 结构体在使用时未经定义
+	// 仅使用1，3，5，6，7，10，12
 } ErrorTypeEnum;
 /*
  * 数组等价 数组的基类型相同，维数相同
@@ -29,9 +30,15 @@ typedef enum _ErrorTypeEnum
  */
 
 typedef enum _Kind {
-	BASIC, 
-	ARRAY, 
-	STRUCTURE,
-	FUNCTION 
+	BASIC_KIND, 
+	ARRAY_KIND, 
+	STRUCTURE_KIND,
+	FUNCTION_KIND 
 } Kind;
+
+typedef enum _BasicTypeEnum
+{
+	INT_TYPE = 1,
+	FLOAT_TYPE
+} BasicTypeEnum;
 #endif // SEMANTYPEENUM_H

@@ -1,8 +1,11 @@
 #include "SyntaxTree.h"
 #include "Parse.tab.h"
+#include "Semantic.h"
+#define LAB1_ACTIVE
+// #define LAB2_ACTIVE
 
 extern NodePtr RootNode;
-
+extern TablePtr RootTable;
 extern int yylineno;
 extern int yyparse();
 extern void yyrestart(FILE*);
@@ -30,8 +33,24 @@ int main(int argc, char** argv) {
     #endif
 
     if (!LexError && !SynError) {
-        printTree(RootNode, 0);
+        #ifdef LAB1_ACTIVE
+            printTree(RootNode, 0);
+        #endif
+
+        #ifdef LAB2_ACTIVE
+            //Program(RootNode);
+            
+        #endif
+        
+
     }
     freeTree(RootNode);
+
+    
+    #ifdef LAB2_ACTIVE
+        freeTable();
+    #endif
+
+
     return 0;
 }

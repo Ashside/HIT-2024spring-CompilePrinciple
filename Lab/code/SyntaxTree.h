@@ -15,8 +15,8 @@ typedef struct _Node
 {
 	TokenTypeEnum type;
 	int line;
-	char *value; // for token, NULL for non-terminal. Return value for lex
-	char *name;	 // for variable
+	char *value; // 字面值，例如：int、a、1等
+	char *name;	 // 终结符或非终结符的名字，例如：ID、Program、ExtDefList等
 	struct _Node *child;
 	struct _Node *sibling;
 } Node;
