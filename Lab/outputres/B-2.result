@@ -1,7 +1,0 @@
-Error type B at Line 5 Column 16: syntax error, unexpected ASSIGNOP.
-Error type B at Line 6 Column 6: syntax error, unexpected LC.
-Error type B at Line 9 Column 10: syntax error, unexpected LC.
-Error type B at Line 18 Column 16: syntax error, unexpected PLUS.
-Error type B at Line 25 Column 2: syntax error, unexpected LC.
-Error type B at Line 30 Column 10: syntax error, unexpected RB.
-Error type B at Line 32 Column 8: syntax error, unexpected TYPE.

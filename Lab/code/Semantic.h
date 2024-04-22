@@ -5,6 +5,8 @@
 #include "SemanTypeEnum.h"
 #include "SyntaxTree.h"
 
+//#define DEBUG_SEMANTIC_ANALYSIS
+
 typedef struct _Type *TypePtr;
 typedef struct _FieldList *FieldListPtr;
 typedef struct _TableItem *ItemPtr;
@@ -60,10 +62,8 @@ typedef struct _FieldList
 
 typedef struct _TableItem
 {
-	int depth; // 作用域深度
 	FieldListPtr fieldList; // 变量的作用域
 
-	ItemPtr nextSymbol; // 下一个符号，深度相同
 	ItemPtr nextHashItem; // 下一个哈希值相同的符号
 } TableItem;
 
@@ -71,12 +71,6 @@ typedef struct _HashTable
 {
 	ItemPtr *table; // 哈希表，注意类型是指针数组
 } HashTable;
-
-typedef struct _Stack
-{
-	ItemPtr* stackList; // 栈
-	int top; // 栈顶
-} Stack;
 
 typedef struct _Table
 {
@@ -92,13 +86,13 @@ extern TablePtr RootTable;
 unsigned int getHashCode(char *name);
 void reportError(ErrorTypeEnum errorType, int line, const char *msg);
 // 语义分析功能函数
-void freeSymbolTable();
+void freeSymbolTable(TablePtr table);
 void initSymbolTable();
-
+void startSemantic(NodePtr node);
 
 
 // 类型相关函数
-TypePtr createType(Kind kind, ...);
+TypePtr createType(Kind kind,int argNum, ...);
 int compareType(TypePtr type1, TypePtr type2);
 void printType(TypePtr type);
 void freeType(TypePtr type);
@@ -127,16 +121,10 @@ void setHashHeadItem(HashTablePtr hashTable,int index,ItemPtr newItemValue);
 
 
 
-// 栈相关函数
-/*
-StackPtr createStack();
-void freeStack(StackPtr stack);
-*/
-
 // 符号表相关函数
 TablePtr createTable();
 void freeTable(TablePtr table);
-ItemPtr searchTable(TablePtr table, char *name);
+ItemPtr findItemByName(TablePtr table, char *name);
 int isConflict(TablePtr table, ItemPtr item);
 void insertTable(TablePtr table, ItemPtr item);
 void deleteTableItem(TablePtr table, ItemPtr item);
@@ -160,7 +148,7 @@ void ExtDecList(NodePtr node,TypePtr type);
 //弃用
 TypePtr StructSpecifier(NodePtr node);
 
-ItemPtr VarDec(NodePtr node, TypePtr spec);
+void VarDec(NodePtr node, TypePtr spec);
 
 //弃用
 void FunDec(NodePtr node, TypePtr ret);

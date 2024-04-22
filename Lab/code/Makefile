@@ -2,7 +2,7 @@
 CC = gcc
 
 # 指定编译标志
-CFLAGS = -Wall -g
+CFLAGS = -Wall -g 
 
 # Bison生成的文件
 BISON_FILE = Parse.tab.c
@@ -25,8 +25,8 @@ TARGET = parser
 # TODO: 源文件，排除语义分析文件
 SRCS = $(wildcard *.c)
 HDRS = $(wildcard *.h)
-SRCS := $(filter-out $(SEMANTIC_FILE), $(SRCS))
-HDRS := $(filter-out $(SEMANTIC_HEADER), $(HDRS))
+#SRCS := $(filter-out $(SEMANTIC_FILE), $(SRCS))
+#HDRS := $(filter-out $(SEMANTIC_HEADER), $(HDRS))
 
 
 

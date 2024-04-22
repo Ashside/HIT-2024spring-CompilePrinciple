@@ -1,7 +1,7 @@
 
 #include "SyntaxTree.h"
 
-//#define DEBUG_NEW_NODES
+
 NodePtr newTokenNode(TokenTypeEnum type, int line, char *name, char *value)
 {
 	#ifdef DEBUG_NEW_NODES

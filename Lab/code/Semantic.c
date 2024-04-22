@@ -2,6 +2,7 @@
 #include "SyntaxTree.h"
 #include "TokenTypeEnum.h"
 #include "SemanTypeEnum.h"
+
 TablePtr RootTable = NULL;
 FieldListPtr RootFieldList = NULL;
 
@@ -12,7 +13,7 @@ unsigned int getHashCode(char *name)
 	for (; *name; ++name)
 	{
 		val = (val << 2) + *name;
-		if (i = val & ~0x3fff)
+		if ((i = val & ~0x3fff) != 0)
 		{
 			val = (val ^ (i >> 12)) & HASH_TABLE_SIZE;
 		}
@@ -24,18 +25,34 @@ void reportError(ErrorTypeEnum errorType, int line, const char *msg)
 {
 	printf("Error type %d at Line %d: %s\n", errorType, line, msg);
 }
-void freeSymbolTable()
+void freeSymbolTable(TablePtr table)
 {
-	// TODO: freeSymbolTable
+#ifdef DEBUG_SEMANTIC_ANALYSIS
+	printf("Free symbol table\n");
+#endif
+	if (table == NULL)
+	{
+		return;
+	}
+	freeTable(table);
 }
-
 void initSymbolTable()
 {
-	// TODO: initSymbolTable
+	RootTable = createTable();
+#ifdef DEBUG_SEMANTIC_ANALYSIS
+	assert(RootTable != NULL);
+	printf("Symbol table initialized\n");
+#endif
 }
 void startSemantic(NodePtr node)
 {
-	assert(node != NULL); // 保证node不为空
+	if (node == NULL)
+	{
+		return;
+	}
+#ifdef DEBUG_SEMANTIC_ANALYSIS
+	printf("Semantic analysing node: %s\n", node->name);
+#endif
 
 	if (!strcmp(node->name, "ExtDef"))
 	{
@@ -49,12 +66,15 @@ void startSemantic(NodePtr node)
 	{
 		Exp(node);
 	}
+#ifdef DEBUG_SEMANTIC_ANALYSIS
+	printf("Semantic analysing node: %s finished\n", node->name);
+#endif
 
 	startSemantic(node->child);
 	startSemantic(node->sibling);
 }
 // 类型相关函数
-TypePtr createType(Kind kind, ...)
+TypePtr createType(Kind kind, int argNum, ...)
 {
 	TypePtr type = (TypePtr)malloc(sizeof(Type));
 
@@ -63,20 +83,20 @@ TypePtr createType(Kind kind, ...)
 	switch (kind)
 	{
 	case BASIC_KIND:
-		va_start(argList, 1);
+		va_start(argList, argNum);
 		type->u.basic = va_arg(argList, BasicTypeEnum);
 		break;
 	case ARRAY_KIND:
-		va_start(argList, 2);
+		va_start(argList, argNum);
 		type->u.array.elementType = va_arg(argList, TypePtr);
 		type->u.array.size = va_arg(argList, int);
 	case STRUCTURE_KIND:
-		va_start(argList, 2);
+		va_start(argList, argNum);
 		type->u.structure.structName = va_arg(argList, char *);
 		type->u.structure.field = va_arg(argList, FieldListPtr);
 		break;
 	case FUNCTION_KIND:
-		va_start(argList, 3);
+		va_start(argList, argNum);
 		type->u.function.argc = va_arg(argList, int);
 		type->u.function.argv = va_arg(argList, FieldListPtr);
 		type->u.function.retType = va_arg(argList, TypePtr);
@@ -121,12 +141,13 @@ int compareType(TypePtr type1, TypePtr type2)
 			break;
 		}
 	}
+	return FALSE;
 }
 void printType(TypePtr type)
 {
 	if (type == NULL)
 	{
-		printf("NULL Type\n");
+		printf("Type: NULL\n");
 	}
 	else
 	{
@@ -158,13 +179,11 @@ void printType(TypePtr type)
 
 void freeType(TypePtr type)
 {
-	assert(type != NULL);
-	assert(type->kind == BASIC_KIND || type->kind == ARRAY_KIND || type->kind == STRUCTURE_KIND || type->kind == FUNCTION_KIND);
 	if (type == NULL)
 	{
 		return;
 	}
-	FieldListPtr temp = NULL;
+	FieldListPtr nextToFree = NULL;
 	switch (type->kind)
 	{
 	case BASIC_KIND:
@@ -177,35 +196,34 @@ void freeType(TypePtr type)
 		if (type->u.structure.structName != NULL)
 		{
 			free(type->u.structure.structName);
-			type->u.structure.structName = NULL;
 		}
-		temp = type->u.structure.field;
+		type->u.structure.structName = NULL;
+		nextToFree = type->u.structure.field;
 
-		while (temp != NULL)
+		while (nextToFree != NULL)
 		{
-			FieldListPtr next = temp->nextField;
-			freeFieldList(temp);
-			temp = next;
+			FieldListPtr cur = nextToFree;
+			nextToFree = nextToFree->nextField;
+			freeFieldList(cur);
 		}
 		type->u.structure.field = NULL;
 		break;
 	case FUNCTION_KIND:
 		freeType(type->u.function.retType);
 		type->u.function.retType = NULL;
-		temp = type->u.function.argv;
-		while (temp != NULL)
+		nextToFree = type->u.function.argv;
+		while (nextToFree != NULL)
 		{
-			FieldListPtr next = temp->nextField;
-			freeFieldList(temp);
-			temp = next;
+			FieldListPtr cur = nextToFree;
+			nextToFree = nextToFree->nextField;
+			freeFieldList(cur);
 		}
 		type->u.function.argv = NULL;
 		break;
 	default:
-		fprintf(stderr, "Traceback: freeType().\nInvalid type kind\n");
+		fprintf(stderr, "Traceback: freeType(). Invalid type kind %d\n", type->kind);
 		break;
 	}
-	free(type);
 }
 
 FieldListPtr createFieldList(char *name, TypePtr type)
@@ -236,7 +254,6 @@ void printFieldList(FieldListPtr fieldList)
 		{
 			printf("FieldList: \n");
 			printf("Name: %s\n", fieldList->name);
-			printf("Type: \n");
 			printType(fieldList->type);
 			fieldList = fieldList->nextField;
 		}
@@ -247,10 +264,10 @@ void printFieldList(FieldListPtr fieldList)
 void freeFieldList(FieldListPtr fieldList)
 {
 	assert(fieldList != NULL);
-	free(fieldList->name);
-	while (fieldList != NULL)
+	if (fieldList->name != NULL)
 	{
-		freeFieldList(fieldList->nextField);
+		free(fieldList->name);
+		fieldList->name = NULL;
 	}
 	if (fieldList->type != NULL)
 	{
@@ -281,7 +298,6 @@ ItemPtr createItem(FieldListPtr fieldList)
 
 	assert(fieldList != NULL);
 	item->fieldList = fieldList;
-	item->nextSymbol = NULL;
 	item->nextHashItem = NULL;
 
 	return item;
@@ -296,7 +312,7 @@ void printItem(ItemPtr item)
 	else
 	{
 		printf("Item: \n");
-		printf("FieldList: \n");
+
 		printFieldList(item->fieldList);
 	}
 }
@@ -332,12 +348,12 @@ void freeHash(HashTablePtr hashTable)
 
 	for (int i = 0; i < HASH_TABLE_SIZE; i++)
 	{
-		ItemPtr temp = hashTable->table[i];
-		while (temp != NULL)
+		ItemPtr next = hashTable->table[i];
+		while (next != NULL)
 		{
-			ItemPtr next = temp->nextHashItem;
-			freeItem(temp);
-			temp = next;
+			ItemPtr cur = next;
+			next = next->nextHashItem;
+			freeItem(cur);
 		}
 		hashTable->table[i] = NULL;
 	}
@@ -373,14 +389,17 @@ TablePtr createTable()
 
 void freeTable(TablePtr table)
 {
-	assert(table != NULL);
+	if (table == NULL)
+	{
+		return;
+	}
 
 	freeHash(table->hashTable);
 	table->hashTable = NULL;
 	free(table);
 }
 
-ItemPtr searchTable(TablePtr table, char *name)
+ItemPtr findItemByName(TablePtr table, char *name)
 {
 	unsigned int index = getHashCode(name);
 	ItemPtr headHashItem = getHashHeadItem(table->hashTable, index);
@@ -401,7 +420,7 @@ ItemPtr searchTable(TablePtr table, char *name)
 
 int isConflict(TablePtr table, ItemPtr item)
 {
-	ItemPtr itemInTable = searchTable(table, item->fieldList->name);
+	ItemPtr itemInTable = findItemByName(table, item->fieldList->name);
 	if (itemInTable == NULL)
 	{
 		return FALSE;
@@ -486,6 +505,9 @@ void ExtDef(NodePtr node)
 
 TypePtr Specifier(NodePtr node)
 {
+#ifdef DEBUG_SEMANTIC_ANALYSIS
+	printf("Specifier: %s\n", node->child->value);
+#endif
 	// Specifier -> TYPE
 	// Specifier -> StructSpecifier
 	assert(node != NULL);
@@ -494,13 +516,19 @@ TypePtr Specifier(NodePtr node)
 	{
 		if (!strcmp(node->child->value, "int"))
 		{
-			return createType(BASIC_KIND, INT_TYPE);
+			return createType(BASIC_KIND, 1, INT_TYPE);
 		}
 		else if (!strcmp(node->child->value, "float"))
 		{
-			return createType(BASIC_KIND, FLOAT_TYPE);
+			return createType(BASIC_KIND, 1, FLOAT_TYPE);
 		}
 	}
+	else
+	{
+		// Specifier -> StructSpecifier
+		// return StructSpecifier(node->child);
+	}
+	return NULL;
 }
 
 void ExtDecList(NodePtr node, TypePtr type)
@@ -525,12 +553,14 @@ void ExtDecList(NodePtr node, TypePtr type)
 	}
 }
 
-ItemPtr VarDec(NodePtr node, TypePtr spec)
+void VarDec(NodePtr node, TypePtr spec)
 {
 	// VarDec -> ID
 	// VarDec -> VarDec LB INT RB
 	assert(node != NULL);
-
+#ifdef DEBUG_SEMANTIC_ANALYSIS
+	printf("VarDec: %s\n", node->child->name);
+#endif
 	NodePtr idNode = node;
 
 	// 找到最后一个ID节点
@@ -538,24 +568,37 @@ ItemPtr VarDec(NodePtr node, TypePtr spec)
 	{
 		idNode = idNode->child;
 	}
+#ifdef DEBUG_SEMANTIC_ANALYSIS
+	printf("VarDec: %s\n", node->child->name);
+#endif
 
 	ItemPtr item = createItem(createFieldList(idNode->value, NULL));
 
+#ifdef DEBUG_SEMANTIC_ANALYSIS
+	printItem(item);
+#endif
 	// 判断类型
-	if (!strcmp(idNode->child->name, "ID"))
+	if (!strcmp(node->child->name, "ID"))
 	{
-		// VarDec -> ID
+// VarDec -> ID
+#ifdef DEBUG_SEMANTIC_ANALYSIS
+		printf("VarDec -> ID\n");
+#endif
 		item->fieldList->type = spec;
 	}
 	else
 	{
-		// VarDec -> VarDec LB INT RB
-		NodePtr varDecNode = idNode->child;
+// VarDec -> VarDec LB INT RB
+#ifdef DEBUG_SEMANTIC_ANALYSIS
+		printf("VarDec -> VarDec LB INT RB\n");
+#endif
+
+		NodePtr varDecNode = node->child;
 		TypePtr tempType = spec;
 		// 找到最后一个VarDec节点
 		while (varDecNode->sibling != NULL)
 		{
-			item->fieldList->type = createType(ARRAY_KIND, tempType, atoi(varDecNode->sibling->sibling->value));
+			item->fieldList->type = createType(ARRAY_KIND, 2, tempType, atoi(varDecNode->sibling->sibling->value));
 			tempType = item->fieldList->type; // TODO: 有问题
 			varDecNode = varDecNode->child;
 		}
@@ -570,7 +613,7 @@ ItemPtr VarDec(NodePtr node, TypePtr spec)
 		insertTable(RootTable, item);
 	}
 
-	return item;
+	return;
 }
 
 void Def(NodePtr node)
@@ -579,6 +622,7 @@ void Def(NodePtr node)
 	assert(node != NULL);
 
 	TypePtr spec = Specifier(node->child);
+
 	DecList(node->child->sibling, spec);
 
 	if (spec != NULL)
@@ -592,11 +636,17 @@ void DecList(NodePtr node, TypePtr spec)
 	// DecList -> Dec
 	// DecList -> Dec COMMA DecList
 	assert(node != NULL);
+#ifdef DEBUG_SEMANTIC_ANALYSIS
+	printf("DecList: %s\n", node->child->name);
+#endif
 
 	NodePtr decNode = node;
 	while (decNode != NULL)
 	{
 		Dec(decNode->child, spec);
+#ifdef DEBUG_SEMANTIC_ANALYSIS
+		printf("Dec finished\n");
+#endif
 		if (decNode->child->sibling != NULL)
 		{
 			// COMMA Dec
@@ -614,8 +664,13 @@ void Dec(NodePtr node, TypePtr spec)
 	// Dec -> VarDec
 	// Dec -> VarDec ASSIGNOP Exp
 	assert(node != NULL);
-
-	ItemPtr item = VarDec(node->child, spec);
+#ifdef DEBUG_SEMANTIC_ANALYSIS
+	printf("Dec: %s\n", node->child->name);
+#endif
+	VarDec(node->child, spec);
+#ifdef DEBUG_SEMANTIC_ANALYSIS
+	printf("VarDec finished\n");
+#endif
 }
 
 TypePtr Exp(NodePtr node)
@@ -648,18 +703,20 @@ TypePtr Exp(NodePtr node)
 	// Exp -> FLOAT
 	if (!strcmp(expNode->name, "INT"))
 	{
-		return createType(BASIC_KIND, INT_TYPE);
+		return createType(BASIC_KIND, 1, INT_TYPE);
 	}
 	else if (!strcmp(expNode->name, "FLOAT"))
 	{
-		return createType(BASIC_KIND, FLOAT_TYPE);
+		return createType(BASIC_KIND, 1, FLOAT_TYPE);
 	}
 	else if (!strcmp(expNode->name, "ID"))
 	{
-		ItemPtr item = searchTable(RootTable, expNode->value);
+		ItemPtr item = findItemByName(RootTable, expNode->value);
 		if (item == NULL)
 		{
-			reportError(NOT_DEFINED_VARIABLE, node->line, "Not defined variable");
+			reportError(NOT_DEFINED_VARIABLE, node->line, "Undefined variable");
+			// 添加进符号表，防止重复报错
+			insertTable(RootTable, createItem(createFieldList(expNode->value, NULL)));
 			return NULL;
 		}
 		else
@@ -672,7 +729,8 @@ TypePtr Exp(NodePtr node)
 	// Exp -> Exp DOT ID
 	else if (!strcmp(expNode->name, "Exp"))
 	{
-		if (!strcmp(expNode->sibling->name,"LB")){
+		if (!strcmp(expNode->sibling->name, "LB"))
+		{
 			// Exp -> Exp LB Exp RB
 			TypePtr leftType = Exp(expNode);
 			TypePtr rightType = Exp(expNode->sibling->sibling);
@@ -692,27 +750,8 @@ TypePtr Exp(NodePtr node)
 				return NULL;
 			}
 		}
-		else if (!strcmp(expNode->sibling->name,"DOT")){
-			// Exp -> Exp DOT ID
-			TypePtr type = Exp(expNode);
-			if (type == NULL || type->kind != STRUCTURE_KIND)
-			{
-				reportError(NOT_STRUCT, node->line, "Not struct variable");
-				return NULL;
-			}
-			FieldListPtr field = type->u.structure.field;
-			while (field != NULL)
-			{
-				if (!strcmp(field->name, expNode->sibling->sibling->value))
-				{
-					return field->type;
-				}
-				field = field->nextField;
-			}
-			reportError(NOT_DEFINED_SCOPE, node->line, "Not defined scope");
-			return NULL;
-		}
-		else
+
+		else if (strcmp(expNode->sibling->name, "DOT"))
 		{
 			// Exp 运算符 Exp
 			TypePtr leftType = Exp(expNode);
@@ -721,12 +760,39 @@ TypePtr Exp(NodePtr node)
 			{
 				return NULL;
 			}
-			if (!compareType(leftType, rightType))
+			if (!strcmp(expNode->sibling->name, "ASSIGNOP"))
 			{
-				reportError(MISMATCHED_OPERAND, node->line, "Mismatched operand");
+				if (!strcmp(expNode->child->name, "INT") || !strcmp(expNode->child->name, "FLOAT"))
+				{
+					reportError(NOT_LEFT_ASSIGNMENT, node->line, "The left-hand side of an assignment must be a variable.");
+				}
+				else if(!strcmp(expNode->child->name,"ID"))
+				{
+					if (leftType->u.basic != rightType->u.basic)
+					{
+						reportError(MISMATCHED_ASSIGNMENT, node->line, "Type mismatched for assignment.");
+					}
+				}
+			}
+			else
+			{
+				if (leftType->u.basic != rightType->u.basic)
+				{
+					reportError(MISMATCHED_OPERAND, node->line, "Type mismatched for operands.");
+				}
+			}
+		}
+		else if (!strcmp(expNode->sibling->name, "DOT"))
+		{
+			// Exp -> Exp DOT ID
+			// 弃用结构体域的比较
+			TypePtr leftType = Exp(expNode);
+			if (leftType == NULL)
+			{
 				return NULL;
 			}
-			return leftType;
+			// printf("Exp -> Exp DOT ID\n");
 		}
 	}
+	return NULL;
 }

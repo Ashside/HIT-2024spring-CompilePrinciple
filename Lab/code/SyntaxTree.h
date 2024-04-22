@@ -7,7 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "TokenTypeEnum.h"
-
+//#define DEBUG_NEW_NODES
 #define TRUE 1
 #define FALSE 0
 

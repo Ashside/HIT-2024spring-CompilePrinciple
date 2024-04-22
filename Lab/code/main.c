@@ -1,8 +1,10 @@
 #include "SyntaxTree.h"
 #include "Parse.tab.h"
 #include "Semantic.h"
-#define LAB1_ACTIVE
-// #define LAB2_ACTIVE
+//#define LAB1_ACTIVE
+#define LAB2_ACTIVE
+
+
 
 extern NodePtr RootNode;
 extern TablePtr RootTable;
@@ -27,30 +29,30 @@ int main(int argc, char** argv) {
 
     yyrestart(f);
     yyparse();
-    
-    #ifdef DEBUG_NEW_NODES
-        printf("Syntax analysis finished\n");
-    #endif
+
+
 
     if (!LexError && !SynError) {
         #ifdef LAB1_ACTIVE
+            
             printTree(RootNode, 0);
+            
         #endif
 
         #ifdef LAB2_ACTIVE
-            //Program(RootNode);
-            
+            initSymbolTable();
+            startSemantic(RootNode);
         #endif
         
 
     }
-    freeTree(RootNode);
 
     
     #ifdef LAB2_ACTIVE
-        freeTable();
-    #endif
 
+        freeSymbolTable(RootTable);
+    #endif
+    freeTree(RootNode);
 
     return 0;
 }
