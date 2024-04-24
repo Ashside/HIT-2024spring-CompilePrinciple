@@ -55,44 +55,49 @@ typedef struct _FieldList
 {
 	char *name; // 域的名字
 	TypePtr type;	// 域的类型
-
 	FieldListPtr nextField; // 下一个域
 } FieldList;
 
 
 typedef struct _TableItem
 {
-	FieldListPtr fieldList; // 变量的作用域
-
+	FieldListPtr fieldList; // 变量的作用域，同时存放了变量的类型和名字
 	ItemPtr nextHashItem; // 下一个哈希值相同的符号
 } TableItem;
 
 typedef struct _HashTable
 {
-	ItemPtr *table; // 哈希表，注意类型是指针数组
+	ItemPtr *table; // 哈希表，类型是TableItem数组
 } HashTable;
 
 typedef struct _Table
 {
-	HashTablePtr hashTable; // 符号表
-	StackPtr stack; // 栈
-	int anonymousCount; // 匿名结构体计数
+	HashTablePtr hashTable; // 符号表的哈希表
 } Table;
 
 // 导入符号表
 extern TablePtr RootTable;
 
 // 功能函数
+
+// 哈希函数，根据名字生成哈希值
 unsigned int getHashCode(char *name);
+// 错误报告函数
 void reportError(ErrorTypeEnum errorType, int line, const char *msg);
+
 // 语义分析功能函数
+
+// 释放符号表
 void freeSymbolTable(TablePtr table);
+// 初始化符号表
 void initSymbolTable();
+// 语义分析
 void startSemantic(NodePtr node);
 
 
 // 类型相关函数
 TypePtr createType(Kind kind,int argNum, ...);
+// 比较两个类型是否相同，相同返回TRUE，不同返回FALSE
 int compareType(TypePtr type1, TypePtr type2);
 void printType(TypePtr type);
 void freeType(TypePtr type);
@@ -133,50 +138,63 @@ void printTable(TablePtr table);
 
 
 
-// 产生式相关函数
-//void Program(NodePtr node);
 
+// 产生式相关函数
+
+//弃用
+void Program();
+//弃用
+void ExtDefList();
+//弃用
+void StructSpecifier();
+//弃用
+void FunDec();
+//弃用
+void VarList();
+//弃用
+void ParamDec();
+//弃用
+void CompSt();
+//弃用
+void StmtList();
+//弃用
+void Stmt();
+//弃用
+void DefList();
+//弃用
+void Args();
+
+// ExtDef -> Specifier ExtDecList SEMI
+// ExtDef -> Specifier SEMI
+// ExtDef -> Specifier FunDec CompSt
 void ExtDef(NodePtr node);
 
-//弃用
-void ExtDefList(NodePtr node,TypePtr spec);
-
+// Specifier -> TYPE
 TypePtr Specifier(NodePtr node);
 
+// ExtDecList -> VarDec
+// ExtDecList -> VarDec COMMA ExtDecList
 void ExtDecList(NodePtr node,TypePtr type);
 
-//弃用
-TypePtr StructSpecifier(NodePtr node);
-
+// VarDec -> ID
+// VarDec -> VarDec LB INT RB
 void VarDec(NodePtr node, TypePtr spec);
 
-//弃用
-void FunDec(NodePtr node, TypePtr ret);
 
-//弃用
-void VarList(NodePtr node, ItemPtr func);
-
-//弃用
-FieldListPtr ParamDec(NodePtr node);
-
-//弃用
-void CompSt(NodePtr node, TypePtr ret);
-//弃用
-void StmtList(NodePtr node, TypePtr ret);
-//弃用
-void Stmt(NodePtr node, TypePtr ret);
-
-//弃用
-void DefList(NodePtr node, ItemPtr stru);
-
+// Def -> Specifier DecList SEMI
 void Def(NodePtr node);
+
+// DecList -> Dec
+// DecList -> Dec COMMA DecList
 void DecList(NodePtr node, TypePtr spec);
+
+// Dec -> VarDec
+// Dec -> VarDec ASSIGNOP Exp
 void Dec(NodePtr node, TypePtr spec);
 
+// Exp -> Exp ASSIGNOP Exp
+// Exp -> Exp AND Exp
 TypePtr Exp(NodePtr node);
-
-//弃用
-void Args(NodePtr node, ItemPtr func);
 
 
 

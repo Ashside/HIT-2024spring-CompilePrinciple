@@ -53,7 +53,7 @@ void startSemantic(NodePtr node)
 #ifdef DEBUG_SEMANTIC_ANALYSIS
 	printf("Semantic analysing node: %s\n", node->name);
 #endif
-
+	// 共有三个入口，其中前两个完成所有变量的声明以及部分表达式的分析，第三个完成声明之外的表达式分析
 	if (!strcmp(node->name, "ExtDef"))
 	{
 		ExtDef(node);
@@ -69,7 +69,7 @@ void startSemantic(NodePtr node)
 #ifdef DEBUG_SEMANTIC_ANALYSIS
 	printf("Semantic analysing node: %s finished\n", node->name);
 #endif
-
+	// 递归分析
 	startSemantic(node->child);
 	startSemantic(node->sibling);
 }
@@ -80,6 +80,7 @@ TypePtr createType(Kind kind, int argNum, ...)
 
 	type->kind = kind;
 	va_list argList;
+	// 根据kind读入参数，初始化type
 	switch (kind)
 	{
 	case BASIC_KIND:
@@ -88,15 +89,18 @@ TypePtr createType(Kind kind, int argNum, ...)
 		break;
 	case ARRAY_KIND:
 		va_start(argList, argNum);
+		// 数组类型
 		type->u.array.elementType = va_arg(argList, TypePtr);
 		type->u.array.size = va_arg(argList, int);
 	case STRUCTURE_KIND:
 		va_start(argList, argNum);
+		// 结构体类型
 		type->u.structure.structName = va_arg(argList, char *);
 		type->u.structure.field = va_arg(argList, FieldListPtr);
 		break;
 	case FUNCTION_KIND:
 		va_start(argList, argNum);
+		// 函数类型
 		type->u.function.argc = va_arg(argList, int);
 		type->u.function.argv = va_arg(argList, FieldListPtr);
 		type->u.function.retType = va_arg(argList, TypePtr);
@@ -124,20 +128,18 @@ int compareType(TypePtr type1, TypePtr type2)
 	{
 		return FALSE;
 	}
-	else
+	if (type1->kind == type2->kind)
 	{
-		assert(type1->kind == type2->kind);
-		// assert(type1->kind == BASIC || type1->kind == ARRAY || type1->kind == STRUCTURE)
 		switch (type1->kind)
 		{
 		case BASIC_KIND:
-			return type1->u.basic == type2->u.basic;
-		case ARRAY_KIND:
-			return compareType(type1->u.array.elementType, type2->u.array.elementType);
-		case STRUCTURE_KIND:
-			return !strcmp(type1->u.structure.structName, type2->u.structure.structName);
+			if (type1->u.basic == type2->u.basic)
+			{
+				return TRUE;
+			}
+			break;
 		default:
-			fprintf(stderr, "Traceback: compareType().\nInvalid type kind\n");
+			fprintf(stderr, "Traceback: compareType().\nInvalid type kind %d\n", type1->kind);
 			break;
 		}
 	}
@@ -231,6 +233,7 @@ FieldListPtr createFieldList(char *name, TypePtr type)
 
 	FieldListPtr fieldList = (FieldListPtr)malloc(sizeof(FieldList));
 
+	// 复制字符串
 	int len = strlen(name) + 1; // 包括'\0'
 	fieldList->name = (char *)malloc(len * sizeof(char));
 	strncpy(fieldList->name, name, len);
@@ -488,6 +491,83 @@ void printTable(TablePtr table)
 	}
 }
 
+void Program()
+{
+#ifdef DEBUG_SEMANTIC_ANALYSIS
+	printf("Program\n");
+#endif
+}
+
+void ExtDefList()
+{
+#ifdef DEBUG_SEMANTIC_ANALYSIS
+	printf("ExtDefList\n");
+#endif
+}
+
+void StructSpecifier()
+{
+#ifdef DEBUG_SEMANTIC_ANALYSIS
+	printf("StructSpecifier\n");
+#endif
+}
+
+void FunDec()
+{
+#ifdef DEBUG_SEMANTIC_ANALYSIS
+	printf("FunDec\n");
+#endif
+}
+
+void VarList()
+{
+#ifdef DEBUG_SEMANTIC_ANALYSIS
+	printf("VarList\n");
+#endif
+}
+
+void ParamDec()
+{
+#ifdef DEBUG_SEMANTIC_ANALYSIS
+	printf("ParamDec\n");
+#endif
+}
+
+void CompSt()
+{
+#ifdef DEBUG_SEMANTIC_ANALYSIS
+	printf("CompSt\n");
+#endif
+}
+
+void StmtList()
+{
+#ifdef DEBUG_SEMANTIC_ANALYSIS
+	printf("StmtList\n");
+#endif
+}
+
+void Stmt()
+{
+#ifdef DEBUG_SEMANTIC_ANALYSIS
+	printf("Stmt\n");
+#endif
+}
+
+void DefList()
+{
+#ifdef DEBUG_SEMANTIC_ANALYSIS
+	printf("DefList\n");
+#endif
+}
+
+void Args()
+{
+#ifdef DEBUG_SEMANTIC_ANALYSIS
+	printf("Args\n");
+#endif
+}
+
 void ExtDef(NodePtr node)
 {
 	// ExtDef -> Specifier ExtDecList SEMI
@@ -526,6 +606,7 @@ TypePtr Specifier(NodePtr node)
 	else
 	{
 		// Specifier -> StructSpecifier
+		// 弃用结构体
 		// return StructSpecifier(node->child);
 	}
 	return NULL;
@@ -541,6 +622,7 @@ void ExtDecList(NodePtr node, TypePtr type)
 	while (varDecNode != NULL)
 	{
 		VarDec(varDecNode->child, type);
+		// 如果有多个变量声明
 		if (varDecNode->child->sibling != NULL)
 		{
 			// COMMA VarDec
@@ -667,6 +749,7 @@ void Dec(NodePtr node, TypePtr spec)
 #ifdef DEBUG_SEMANTIC_ANALYSIS
 	printf("Dec: %s\n", node->child->name);
 #endif
+
 	VarDec(node->child, spec);
 #ifdef DEBUG_SEMANTIC_ANALYSIS
 	printf("VarDec finished\n");
@@ -750,38 +833,7 @@ TypePtr Exp(NodePtr node)
 				return NULL;
 			}
 		}
-
-		else if (strcmp(expNode->sibling->name, "DOT"))
-		{
-			// Exp 运算符 Exp
-			TypePtr leftType = Exp(expNode);
-			TypePtr rightType = Exp(expNode->sibling->sibling);
-			if (leftType == NULL || rightType == NULL)
-			{
-				return NULL;
-			}
-			if (!strcmp(expNode->sibling->name, "ASSIGNOP"))
-			{
-				if (!strcmp(expNode->child->name, "INT") || !strcmp(expNode->child->name, "FLOAT"))
-				{
-					reportError(NOT_LEFT_ASSIGNMENT, node->line, "The left-hand side of an assignment must be a variable.");
-				}
-				else if(!strcmp(expNode->child->name,"ID"))
-				{
-					if (leftType->u.basic != rightType->u.basic)
-					{
-						reportError(MISMATCHED_ASSIGNMENT, node->line, "Type mismatched for assignment.");
-					}
-				}
-			}
-			else
-			{
-				if (leftType->u.basic != rightType->u.basic)
-				{
-					reportError(MISMATCHED_OPERAND, node->line, "Type mismatched for operands.");
-				}
-			}
-		}
+		//
 		else if (!strcmp(expNode->sibling->name, "DOT"))
 		{
 			// Exp -> Exp DOT ID
@@ -792,6 +844,43 @@ TypePtr Exp(NodePtr node)
 				return NULL;
 			}
 			// printf("Exp -> Exp DOT ID\n");
+		}
+		else
+		{
+			// Exp 运算符 Exp
+			TypePtr leftType = Exp(expNode);
+			TypePtr rightType = Exp(expNode->sibling->sibling);
+			if (leftType == NULL || rightType == NULL)
+			{
+				return NULL;
+			}
+			// Exp -> Exp ASSIGNOP Exp
+			if (!strcmp(expNode->sibling->name, "ASSIGNOP"))
+			{
+				// Exp -> INT ASSIGNOP Exp
+				// Exp -> FLOAT ASSIGNOP Exp
+				if (!strcmp(expNode->child->name, "INT") || !strcmp(expNode->child->name, "FLOAT"))
+				{
+					reportError(NOT_LEFT_ASSIGNMENT, node->line, "The left-hand side of an assignment must be a variable.");
+				}
+				// Exp -> ID ASSIGNOP Exp
+				else if (!strcmp(expNode->child->name, "ID"))
+				{
+					if (!compareType(leftType, rightType))
+					{
+						reportError(MISMATCHED_ASSIGNMENT, node->line, "Type mismatched for assignment.");
+					}
+				}
+			}
+			// Exp -> Exp 运算符 Exp
+			else
+			{
+				// 直接比较类型
+				if (!compareType(leftType, rightType))
+				{
+					reportError(MISMATCHED_OPERAND, node->line, "Type mismatched for operands.");
+				}
+			}
 		}
 	}
 	return NULL;
