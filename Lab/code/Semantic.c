@@ -128,21 +128,20 @@ int compareType(TypePtr type1, TypePtr type2)
 	{
 		return FALSE;
 	}
-	if (type1->kind == type2->kind)
-	{
-		switch (type1->kind)
-		{
-		case BASIC_KIND:
-			if (type1->u.basic == type2->u.basic)
-			{
-				return TRUE;
-			}
-			break;
-		default:
-			fprintf(stderr, "Traceback: compareType().\nInvalid type kind %d\n", type1->kind);
-			break;
-		}
-	}
+
+    switch (type1->kind)
+    {
+    case BASIC_KIND:
+        if (type1->u.basic == type2->u.basic)
+        {
+            return TRUE;
+        }
+        break;
+    default:
+        fprintf(stderr, "Traceback: compareType().\nInvalid type kind %d\n", type1->kind);
+        break;
+    }
+
 	return FALSE;
 }
 void printType(TypePtr type)
@@ -505,68 +504,27 @@ void ExtDefList()
 #endif
 }
 
-void StructSpecifier()
-{
-#ifdef DEBUG_SEMANTIC_ANALYSIS
-	printf("StructSpecifier\n");
+TypePtr StructSpecifier(NodePtr node){
+#indef DEBUG_SEMANTIC_ANALYSIS
+    printf("StructSpecifier\n");
 #endif
 }
 
-void FunDec()
-{
-#ifdef DEBUG_SEMANTIC_ANALYSIS
-	printf("FunDec\n");
-#endif
-}
+void FunDec(NodePtr node, TypePtr retType){}
 
-void VarList()
-{
-#ifdef DEBUG_SEMANTIC_ANALYSIS
-	printf("VarList\n");
-#endif
-}
+void VarList(NodePtr node,ItemPtr funcItem){}
 
-void ParamDec()
-{
-#ifdef DEBUG_SEMANTIC_ANALYSIS
-	printf("ParamDec\n");
-#endif
-}
+FieldListPtr ParamDec(NodePtr node){}
 
-void CompSt()
-{
-#ifdef DEBUG_SEMANTIC_ANALYSIS
-	printf("CompSt\n");
-#endif
-}
+void CompSt(NodePtr node,TypePtr retType){}
 
-void StmtList()
-{
-#ifdef DEBUG_SEMANTIC_ANALYSIS
-	printf("StmtList\n");
-#endif
-}
+void StmtList(NodePtr node,TypePtr retType){}
 
-void Stmt()
-{
-#ifdef DEBUG_SEMANTIC_ANALYSIS
-	printf("Stmt\n");
-#endif
-}
+void Stmt(NodePtr node,TypePtr retType){}
 
-void DefList()
-{
-#ifdef DEBUG_SEMANTIC_ANALYSIS
-	printf("DefList\n");
-#endif
-}
+void DefList(NodePtr node,ItemPtr stcItem){}
 
-void Args()
-{
-#ifdef DEBUG_SEMANTIC_ANALYSIS
-	printf("Args\n");
-#endif
-}
+void Args(NodePtr node,ItemPtr funcItem){}
 
 void ExtDef(NodePtr node)
 {
@@ -798,7 +756,7 @@ TypePtr Exp(NodePtr node)
 		if (item == NULL)
 		{
 			reportError(NOT_DEFINED_VARIABLE, node->line, "Undefined variable");
-			// 添加进符号表，防止重复报错
+			// TODO: 违法操作，添加进符号表，防止重复报错
 			insertTable(RootTable, createItem(createFieldList(expNode->value, NULL)));
 			return NULL;
 		}

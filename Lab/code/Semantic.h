@@ -12,7 +12,6 @@ typedef struct _FieldList *FieldListPtr;
 typedef struct _TableItem *ItemPtr;
 typedef struct _HashTable *HashTablePtr;
 typedef struct _Table *TablePtr;
-typedef struct _Stack *StackPtr;
 
 
 
@@ -136,33 +135,30 @@ void deleteTableItem(TablePtr table, ItemPtr item);
 void printTable(TablePtr table);
 
 
-
-
-
 // 产生式相关函数
 
-//弃用
+
 void Program();
-//弃用
+
 void ExtDefList();
-//弃用
-void StructSpecifier();
-//弃用
-void FunDec();
-//弃用
-void VarList();
-//弃用
-void ParamDec();
-//弃用
-void CompSt();
-//弃用
-void StmtList();
-//弃用
-void Stmt();
-//弃用
-void DefList();
-//弃用
-void Args();
+
+TypePtr StructSpecifier(NodePtr node);
+
+void FunDec(NodePtr node, TypePtr retType);
+
+void VarList(NodePtr node,ItemPtr funcItem);
+
+FieldListPtr ParamDec(NodePtr node);
+
+void CompSt(NodePtr node,TypePtr retType);
+
+void StmtList(NodePtr node,TypePtr retType);
+
+void Stmt(NodePtr node,TypePtr retType);
+
+void DefList(NodePtr node,ItemPtr stcItem);
+
+void Args(NodePtr node,ItemPtr funcItem);
 
 // ExtDef -> Specifier ExtDecList SEMI
 // ExtDef -> Specifier SEMI
