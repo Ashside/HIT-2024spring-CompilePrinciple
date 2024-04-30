@@ -43,7 +43,7 @@ typedef struct _Type
 		struct 
 		{
 			int argc;
-			FieldListPtr argv;
+			FieldListPtr argvField;
 			TypePtr retType;
 		} function;
 		
@@ -66,12 +66,13 @@ typedef struct _TableItem
 
 typedef struct _HashTable
 {
-	ItemPtr *table; // 哈希表，类型是TableItem数组
+	ItemPtr *tableItems; // 哈希表，类型是TableItem数组
 } HashTable;
 
 typedef struct _Table
 {
 	HashTablePtr hashTable; // 符号表的哈希表
+	int structNum; // 结构体的数量
 } Table;
 
 // 导入符号表
@@ -80,9 +81,13 @@ extern TablePtr RootTable;
 // 功能函数
 
 // 哈希函数，根据名字生成哈希值
-unsigned int getHashCode(char *name);
+unsigned int getHashIndex(char *name);
 // 错误报告函数
 void reportError(ErrorTypeEnum errorType, int line, const char *msg);
+// 判断是否为结构体表项
+int isStructItem(ItemPtr item);
+// 判断是否为函数表项
+int isFuncItem(ItemPtr item);
 
 // 语义分析功能函数
 
@@ -95,6 +100,10 @@ void startSemantic(NodePtr node);
 
 
 // 类型相关函数
+// Basic类型 传入类型种类int,float
+// Array类型 传入类型Type,size
+// Structure类型 传入结构体名name,FieldList
+// Function类型 传入参数个数argc,参数列表argvField,返回类型retType
 TypePtr createType(Kind kind,int argNum, ...);
 // 比较两个类型是否相同，相同返回TRUE，不同返回FALSE
 int compareType(TypePtr type1, TypePtr type2);
@@ -130,16 +139,16 @@ TablePtr createTable();
 void freeTable(TablePtr table);
 ItemPtr findItemByName(TablePtr table, char *name);
 int isConflict(TablePtr table, ItemPtr item);
-void insertTable(TablePtr table, ItemPtr item);
+void insertTableItem(TablePtr table, ItemPtr item);
 void deleteTableItem(TablePtr table, ItemPtr item);
 void printTable(TablePtr table);
 
 
 // 产生式相关函数
 
-
+// 弃用
 void Program();
-
+// 弃用
 void ExtDefList();
 
 TypePtr StructSpecifier(NodePtr node);
@@ -174,19 +183,19 @@ void ExtDecList(NodePtr node,TypePtr type);
 
 // VarDec -> ID
 // VarDec -> VarDec LB INT RB
-void VarDec(NodePtr node, TypePtr spec);
+ItemPtr VarDec(NodePtr node, TypePtr spec);
 
 
 // Def -> Specifier DecList SEMI
-void Def(NodePtr node);
+void Def(NodePtr node,ItemPtr stcItem);
 
 // DecList -> Dec
 // DecList -> Dec COMMA DecList
-void DecList(NodePtr node, TypePtr spec);
+void DecList(NodePtr node, TypePtr spec,ItemPtr stcItem);
 
 // Dec -> VarDec
 // Dec -> VarDec ASSIGNOP Exp
-void Dec(NodePtr node, TypePtr spec);
+void Dec(NodePtr node, TypePtr spec,ItemPtr stcItem);
 
 // Exp -> Exp ASSIGNOP Exp
 // Exp -> Exp AND Exp
