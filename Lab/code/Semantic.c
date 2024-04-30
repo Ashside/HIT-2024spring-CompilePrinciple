@@ -95,7 +95,6 @@ TypePtr createType(Kind kind, int argNum, ...)
 {
 #ifdef DEBUG_SEMANTIC_ANALYSIS
 	printf("Create type\n");
-	printf("Kind: %d\n", kind);
 #endif
 	TypePtr type = (TypePtr)malloc(sizeof(Type));
 
@@ -138,8 +137,6 @@ int compareType(TypePtr type1, TypePtr type2)
 {
 #ifdef DEBUG_SEMANTIC_ANALYSIS
 	printf("Compare type\n");
-	printType(type1);
-	printType(type2);
 #endif
 	if (type1 == NULL || type2 == NULL)
 	{
@@ -248,19 +245,16 @@ void freeType(TypePtr type)
 		freeType(type->u.function.retType);
 		type->u.function.retType = NULL;
 		nextToFree = type->u.function.argvField;
-		while (nextToFree != NULL)
+		for(int i=0;i<type->u.function.argc;i++)
 		{
 			FieldListPtr cur = nextToFree;
 			nextToFree = nextToFree->nextField;
 			freeFieldList(cur);
 		}
-		type->u.function.argvField = NULL;
 		break;
 	default:
-		fprintf(stderr, "Traceback: freeType(). Invalid type kind %d\n", type->kind);
 		break;
 	}
-	free(type);
 }
 
 FieldListPtr createFieldList(char *name, TypePtr type)
@@ -268,7 +262,6 @@ FieldListPtr createFieldList(char *name, TypePtr type)
 #ifdef DEBUG_SEMANTIC_ANALYSIS
 	printf("Create field list\n");
 	printf("Name: %s\n", name);
-	printType(type);
 #endif
 
 	FieldListPtr fieldList = (FieldListPtr)malloc(sizeof(FieldList));
@@ -287,6 +280,9 @@ FieldListPtr createFieldList(char *name, TypePtr type)
 // 域相关函数
 void printFieldList(FieldListPtr fieldList)
 {
+#ifdef DEBUG_SEMANTIC_ANALYSIS
+	printf("Print field list\n");
+#endif
 	if (fieldList == NULL)
 	{
 		printf("NULL FieldList\n");
@@ -296,7 +292,7 @@ void printFieldList(FieldListPtr fieldList)
 		while (fieldList != NULL)
 		{
 			printf("FieldList: \n");
-			printf("Name: %s\n", fieldList->name);
+	
 			printType(fieldList->type);
 			fieldList = fieldList->nextField;
 		}
@@ -304,13 +300,13 @@ void printFieldList(FieldListPtr fieldList)
 	}
 }
 
+
+
 void freeFieldList(FieldListPtr fieldList)
 {
 	assert(fieldList != NULL);
 #ifdef DEBUG_SEMANTIC_ANALYSIS
 	printf("Free field list\n");
-	printf("FieldList: \n");
-	printFieldList(fieldList);
 #endif
 	if (fieldList->name != NULL)
 	{
@@ -347,8 +343,6 @@ ItemPtr createItem(FieldListPtr fieldList)
 {
 #ifdef DEBUG_SEMANTIC_ANALYSIS
 	printf("Create item\n");
-	printf("FieldList: \n");
-	printFieldList(fieldList);
 #endif
 	ItemPtr item = (ItemPtr)malloc(sizeof(TableItem));
 
@@ -379,9 +373,10 @@ void freeItem(ItemPtr item)
 #ifdef DEBUG_SEMANTIC_ANALYSIS
 	printf("Free item\n");
 #endif
-	if (item->fieldList != NULL)
+	if (item->fieldList != NULL || item->fieldList->name == NULL)
 	{
-		freeFieldList(item->fieldList);
+		free(item->fieldList->name);
+		item->fieldList->name = NULL;
 	}
 	item->fieldList = NULL;
 	free(item);
@@ -436,7 +431,6 @@ ItemPtr getHashHeadItem(HashTablePtr hashTable, int index)
 
 	printf("Get hash head item\n");
 	printf("Index: %d\n", index);
-	printItem(hashTable->tableItems[index]);
 #endif
 	return hashTable->tableItems[index];
 }
@@ -448,7 +442,6 @@ void setHashHeadItem(HashTablePtr hashTable, int index, ItemPtr newItemValue)
 #ifdef DEBUG_SEMANTIC_ANALYSIS
 	printf("Set hash head item\n");
 	printf("Index: %d\n", index);
-	printItem(newItemValue);
 #endif
 	hashTable->tableItems[index] = newItemValue;
 }
@@ -489,13 +482,14 @@ ItemPtr findItemByName(TablePtr table, char *name)
 #endif
 	unsigned int index = getHashIndex(name);
 	ItemPtr headHashItem = getHashHeadItem(table->hashTable, index);
+	
 	if (headHashItem == NULL)
 	{
 		return NULL;
 	}
 	while (headHashItem != NULL)
 	{
-		if (strcmp(headHashItem->fieldList->name, name) == 0)
+		if (!strcmp(headHashItem->fieldList->name, name))
 		{
 			return headHashItem;
 		}
@@ -512,6 +506,9 @@ int isConflict(TablePtr table, ItemPtr item)
 	ItemPtr itemInTable = findItemByName(table, item->fieldList->name);
 	if (itemInTable == NULL)
 	{
+		#ifdef DEBUG_SEMANTIC_ANALYSIS
+		printf("No conflict: %s\n", item->fieldList->name);
+		#endif
 		return FALSE;
 	}
 	while (itemInTable != NULL)
@@ -524,12 +521,26 @@ int isConflict(TablePtr table, ItemPtr item)
 			{
 				if (itemInTable->fieldList->type->kind == STRUCTURE_KIND && item->fieldList->type->kind == STRUCTURE_KIND)
 				{
+					#ifdef DEBUG_SEMANTIC_ANALYSIS
+					printf("Conflict: %s\n", itemInTable->fieldList->name);
+					#endif
+					return TRUE;
+				}
+				// 对于其他类型，只要类型相同就冲突
+				if (itemInTable->fieldList->type->kind==item->fieldList->type->kind)
+				{
+					#ifdef DEBUG_SEMANTIC_ANALYSIS
+					printf("Conflict: %s\n", itemInTable->fieldList->name);
+					#endif
 					return TRUE;
 				}
 			}
 		}
 		itemInTable = itemInTable->nextHashItem;
 	}
+#ifdef DEBUG_SEMANTIC_ANALYSIS
+	printf("No conflict: %s\n", item->fieldList->name);
+#endif
 	return FALSE;
 }
 
@@ -538,7 +549,6 @@ void insertTableItem(TablePtr table, ItemPtr item)
 	assert(table != NULL && item != NULL);
 #ifdef DEBUG_SEMANTIC_ANALYSIS
 	printf("Insert table item\n");
-	printItem(item);
 #endif
 	unsigned int index = getHashIndex(item->fieldList->name);
 	ItemPtr headHashItem = getHashHeadItem(table->hashTable, index);
@@ -559,7 +569,6 @@ void deleteTableItem(TablePtr table, ItemPtr item)
 	assert(table != NULL && item != NULL);
 #ifdef DEBUG_SEMANTIC_ANALYSIS
 	printf("Delete table item\n");
-	printItem(item);
 #endif
 	unsigned int index = getHashIndex(item->fieldList->name);
 	ItemPtr headHashItem = getHashHeadItem(table->hashTable, index);
@@ -701,7 +710,9 @@ void FunDec(NodePtr node, TypePtr retType)
 	// eg: int a();
 
 	assert(node != NULL);
-
+#ifdef DEBUG_SEMANTIC_ANALYSIS
+	printf("FunDec: %s\n", node->child->value);
+#endif
 	NodePtr idNode = node->child;
 	ItemPtr funcItem = createItem(createFieldList(idNode->value, createType(FUNCTION_KIND, 3, 0, NULL, retType)));
 	// FunDec -> ID LP VarList RP
@@ -709,14 +720,25 @@ void FunDec(NodePtr node, TypePtr retType)
 	{
 		VarList(idNode->sibling->sibling, funcItem);
 	}
+	else
+	{
+		// FunDec -> ID LP RP
+		// eg: int a();
+		funcItem->fieldList->type->u.function.argvField = NULL;
+		funcItem->fieldList->type->u.function.argc = 0;
+	}
 	// 插入符号表
 	if (isConflict(RootTable, funcItem))
 	{
 		reportError(RE_DEFINED_FUNCTION, node->line, "Redefined function");
-		freeItem(funcItem);
+	
 	}
 	else
 	{
+#ifdef DEBUG_SEMANTIC_ANALYSIS
+		printf("Insert function item\n");
+		printf("Function name: %s\n", funcItem->fieldList->name);
+#endif
 		insertTableItem(RootTable, funcItem);
 	}
 }
@@ -730,7 +752,7 @@ void VarList(NodePtr node, ItemPtr funcItem)
 	assert(node != NULL);
 #ifdef DEBUG_SEMANTIC_ANALYSIS
 
-	printf("VarList: %s\n", node->child->name);
+	printf("VarList: %s\n", node->child->value);
 #endif
 	int argc = 0;
 	FieldListPtr curFiled = NULL;
@@ -765,7 +787,7 @@ FieldListPtr ParamDec(NodePtr node)
 	assert(node != NULL);
 #ifdef DEBUG_SEMANTIC_ANALYSIS
 
-	printf("ParamDec: %s\n", node->child->name);
+	printf("ParamDec: %s\n", node->child->sibling->name);
 #endif
 	TypePtr spec = Specifier(node->child);
 	FieldListPtr field = NULL;
@@ -799,7 +821,12 @@ void CompSt(NodePtr node, TypePtr retType)
 	{
 		DefList(defListNode, NULL);
 	}
-	if (!strcmp(stmtListNode->name, "StmtList"))
+	if (!strcmp(defListNode->name, "StmtList"))
+	{
+		// 可能没有定义
+		StmtList(defListNode, retType);
+	}
+	if ((stmtListNode!=NULL) && (!strcmp(stmtListNode->name, "StmtList")))
 	{
 		StmtList(stmtListNode, retType);
 	}
@@ -980,10 +1007,7 @@ void ExtDef(NodePtr node)
 		CompSt(node->child->sibling->sibling, spec);
 	}
 
-	if (spec != NULL)
-	{
-		freeType(spec);
-	}
+
 }
 
 TypePtr Specifier(NodePtr node)
@@ -1058,10 +1082,6 @@ ItemPtr VarDec(NodePtr node, TypePtr spec)
 #endif
 
 	ItemPtr item = createItem(createFieldList(idNode->value, NULL));
-
-#ifdef DEBUG_SEMANTIC_ANALYSIS
-	printItem(item);
-#endif
 	// 判断类型
 	// VarDec -> ID
 	if (!strcmp(node->child->name, "ID"))
@@ -1090,6 +1110,9 @@ ItemPtr VarDec(NodePtr node, TypePtr spec)
 
 	if (isConflict(RootTable, item))
 	{
+#ifdef DEBUG_SEMANTIC_ANALYSIS
+printf("Conflict\n");
+#endif
 		reportError(RE_DEFINED_VARIABLE, node->line, "Redefined variable");
 		freeItem(item);
 	}
@@ -1114,10 +1137,6 @@ void Def(NodePtr node, ItemPtr stcItem)
 
 	DecList(node->child->sibling, spec, stcItem);
 
-	if (spec != NULL)
-	{
-		freeType(spec);
-	}
 }
 
 void DecList(NodePtr node, TypePtr spec, ItemPtr stcItem)
@@ -1147,6 +1166,7 @@ void DecList(NodePtr node, TypePtr spec, ItemPtr stcItem)
 			break;
 		}
 	}
+
 }
 
 void Dec(NodePtr node, TypePtr spec, ItemPtr stcItem)
@@ -1198,7 +1218,7 @@ void Dec(NodePtr node, TypePtr spec, ItemPtr stcItem)
 			{
 				curField->nextField = varDecItem->fieldList;
 			}
-			freeItem(varDecItem);
+			
 		}
 	}
 	// Dec -> VarDec ASSIGNOP Exp
@@ -1225,7 +1245,7 @@ void Dec(NodePtr node, TypePtr spec, ItemPtr stcItem)
 			{
 				reportError(MISMATCHED_ASSIGNMENT, node->line, "Illegal assignment");
 			}
-			freeItem(varDecItem);
+			
 		}
 	}
 }

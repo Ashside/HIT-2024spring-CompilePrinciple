@@ -1,7 +1,7 @@
 #include "SyntaxTree.h"
 #include "Parse.tab.h"
 #include "Semantic.h"
-// #define LAB1_ACTIVE
+//#define LAB1_ACTIVE
 #define LAB2_ACTIVE
 
 extern NodePtr RootNode;

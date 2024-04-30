@@ -115,6 +115,7 @@ void freeType(TypePtr type);
 // 域相关函数
 FieldListPtr createFieldList(char* name, TypePtr type);
 void printFieldList(FieldListPtr fieldList);
+
 void freeFieldList(FieldListPtr fieldList);
 void setFieldName(FieldListPtr fieldList,char * newName);
 

@@ -34,6 +34,12 @@ HDRS = $(wildcard *.h)
 # TODO不能加入lex.yy.c，因为flex会生成一个main函数，同时造成重复定义
 $(TARGET): $(SRCS) $(HDRS) $(BISON_FILE) $(BISON_HEADER) $(FLEX_FILE)
 	$(CC) $(CFLAGS) -o $(TARGET) $(SRCS) $(BISON_FILE) -lfl -ly
+
+Lab1DBG: $(SRCS) $(HDRS) $(BISON_FILE) $(BISON_HEADER) $(FLEX_FILE)
+	$(CC) $(CFLAGS) -o $(TARGET) $(SRCS) $(BISON_FILE) -lfl -ly -DDEBUG_NEW_NODES 
+
+Lab2DBG: $(SRCS) $(HDRS) $(BISON_FILE) $(BISON_HEADER) $(FLEX_FILE)
+	$(CC) $(CFLAGS) -o $(TARGET) $(SRCS) $(BISON_FILE) -lfl -ly -DDEBUG_SEMANTIC_ANALYSIS
 # Bison规则
 $(BISON_FILE) $(BISON_HEADER) $(BISON_OUTPUT): $(BISON_SRC)
 	bison -d -v -t $(BISON_SRC)
