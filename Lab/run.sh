@@ -17,8 +17,18 @@ mkdir outputres
 # 结果输出到outputres目录下
 for file in testcases/*
 do
-	echo "Running $file"
-	./code/parser $file > outputres/$(basename $file .cmm).result
+#如果第一个参数是-all，则输出所有的结果
+	if [ "$1" = "-all" ]; then
+		echo "Running $file"
+		./code/parser $file > outputres/$(basename $file .cmm).result
+		continue
+	#否则打印所有结果，不写入文件
+	else
+		echo "Running $file"
+		./code/parser $file
+	fi
+	
+
 done
 
 # 清理现场

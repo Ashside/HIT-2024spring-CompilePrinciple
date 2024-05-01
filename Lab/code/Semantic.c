@@ -74,20 +74,20 @@ TypePtr cpType(TypePtr src)
 	switch (src->kind)
 	{
 	case BASIC_KIND:
-		dst->u.basic = src->u.basic;
+		dst->attr.basic = src->attr.basic;
 		break;
 	case ARRAY_KIND:
-		dst->u.array.elementType = cpType(src->u.array.elementType);
-		dst->u.array.size = src->u.array.size;
+		dst->attr.array.elementType = cpType(src->attr.array.elementType);
+		dst->attr.array.size = src->attr.array.size;
 		break;
 	case STRUCTURE_KIND:
-		dst->u.structure.structName = cpString(src->u.structure.structName);
-		dst->u.structure.field = cpFieldList(src->u.structure.field);
+		dst->attr.structure.structName = cpString(src->attr.structure.structName);
+		dst->attr.structure.field = cpFieldList(src->attr.structure.field);
 		break;
 	case FUNCTION_KIND:
-		dst->u.function.argc = src->u.function.argc;
-		dst->u.function.argvField = cpFieldList(src->u.function.argvField);
-		dst->u.function.retType = cpType(src->u.function.retType);
+		dst->attr.function.argc = src->attr.function.argc;
+		dst->attr.function.argvField = cpFieldList(src->attr.function.argvField);
+		dst->attr.function.retType = cpType(src->attr.function.retType);
 		break;
 	default:
 		break;
@@ -163,25 +163,25 @@ TypePtr createType(Kind kind, int argNum, ...)
 	{
 	case BASIC_KIND:
 		va_start(argList, argNum);
-		type->u.basic = va_arg(argList, BasicTypeEnum);
+		type->attr.basic = va_arg(argList, BasicTypeEnum);
 		break;
 	case ARRAY_KIND:
 		va_start(argList, argNum);
 		// 数组类型
-		type->u.array.elementType = va_arg(argList, TypePtr);
-		type->u.array.size = va_arg(argList, int);
+		type->attr.array.elementType = va_arg(argList, TypePtr);
+		type->attr.array.size = va_arg(argList, int);
 	case STRUCTURE_KIND:
 		va_start(argList, argNum);
 		// 结构体类型
-		type->u.structure.structName = va_arg(argList, char *);
-		type->u.structure.field = va_arg(argList, FieldListPtr);
+		type->attr.structure.structName = va_arg(argList, char *);
+		type->attr.structure.field = va_arg(argList, FieldListPtr);
 		break;
 	case FUNCTION_KIND:
 		va_start(argList, argNum);
 		// 函数类型
-		type->u.function.argc = va_arg(argList, int);
-		type->u.function.argvField = va_arg(argList, FieldListPtr);
-		type->u.function.retType = va_arg(argList, TypePtr);
+		type->attr.function.argc = va_arg(argList, int);
+		type->attr.function.argvField = va_arg(argList, FieldListPtr);
+		type->attr.function.retType = va_arg(argList, TypePtr);
 		break;
 	default:
 		fprintf(stderr, "Traceback: createType(). Invalid type kind %d\n", kind);
@@ -214,15 +214,15 @@ int compareType(TypePtr type1, TypePtr type2)
 	switch (type1->kind)
 	{
 	case BASIC_KIND:
-		if (type1->u.basic == type2->u.basic)
+		if (type1->attr.basic == type2->attr.basic)
 		{
 			return TRUE;
 		}
 		break;
 	case ARRAY_KIND:
-		return compareType(type1->u.array.elementType, type2->u.array.elementType);
+		return compareType(type1->attr.array.elementType, type2->attr.array.elementType);
 	case STRUCTURE_KIND:
-		return !strcmp(type1->u.structure.structName, type2->u.structure.structName);
+		return !strcmp(type1->attr.structure.structName, type2->attr.structure.structName);
 	default:
 		fprintf(stderr, "Traceback: compareType().\nInvalid type kind %d\n", type1->kind);
 
@@ -243,23 +243,23 @@ void printType(TypePtr type)
 		switch (type->kind)
 		{
 		case BASIC_KIND:
-			printf("Basic Type: %d\n", type->u.basic);
+			printf("Basic Type: %d\n", type->attr.basic);
 			break;
 		case ARRAY_KIND:
 			printf("Array Type: \n");
-			printType(type->u.array.elementType);
-			printf("Array Size: %d\n", type->u.array.size);
+			printType(type->attr.array.elementType);
+			printf("Array Size: %d\n", type->attr.array.size);
 			break;
 		case STRUCTURE_KIND:
-			printf("Structure Type: %s\n", type->u.structure.structName);
-			printFieldList(type->u.structure.field);
+			printf("Structure Type: %s\n", type->attr.structure.structName);
+			printFieldList(type->attr.structure.field);
 			break;
 		case FUNCTION_KIND:
 			printf("Function Type: \n");
-			printf("Argc: %d\n", type->u.function.argc);
-			printFieldList(type->u.function.argvField);
+			printf("Argc: %d\n", type->attr.function.argc);
+			printFieldList(type->attr.function.argvField);
 			printf("Return Type: \n");
-			printType(type->u.function.retType);
+			printType(type->attr.function.retType);
 			break;
 		}
 	}
@@ -280,16 +280,16 @@ void freeType(TypePtr type)
 	case BASIC_KIND:
 		break;
 	case ARRAY_KIND:
-		freeType(type->u.array.elementType);
-		type->u.array.elementType = NULL;
+		freeType(type->attr.array.elementType);
+		type->attr.array.elementType = NULL;
 		break;
 	case STRUCTURE_KIND:
-		if (type->u.structure.structName != NULL)
+		if (type->attr.structure.structName != NULL)
 		{
-			free(type->u.structure.structName);
+			free(type->attr.structure.structName);
 		}
-		type->u.structure.structName = NULL;
-		nextToFree = type->u.structure.field;
+		type->attr.structure.structName = NULL;
+		nextToFree = type->attr.structure.field;
 
 		while (nextToFree != NULL)
 		{
@@ -297,13 +297,13 @@ void freeType(TypePtr type)
 			nextToFree = nextToFree->nextField;
 			freeFieldList(cur);
 		}
-		type->u.structure.field = NULL;
+		type->attr.structure.field = NULL;
 		break;
 	case FUNCTION_KIND:
-		freeType(type->u.function.retType);
-		type->u.function.retType = NULL;
-		nextToFree = type->u.function.argvField;
-		for(int i=0;i<type->u.function.argc;i++)
+		freeType(type->attr.function.retType);
+		type->attr.function.retType = NULL;
+		nextToFree = type->attr.function.argvField;
+		for(int i=0;i<type->attr.function.argc;i++)
 		{
 			FieldListPtr cur = nextToFree;
 			nextToFree = nextToFree->nextField;
@@ -754,7 +754,7 @@ TypePtr StructSpecifier(NodePtr node)
 			{
 				insertTableItem(RootTable, stcItem);
 			}
-			return createType(STRUCTURE_KIND, 2, stcItem->fieldList->name, stcItem->fieldList->type->u.structure.field);
+			return createType(STRUCTURE_KIND, 2, stcItem->fieldList->name, stcItem->fieldList->type->attr.structure.field);
 		}
 	}
 	return NULL;
@@ -782,8 +782,8 @@ void FunDec(NodePtr node, TypePtr retType)
 	{
 		// FunDec -> ID LP RP
 		// eg: int a();
-		funcItem->fieldList->type->u.function.argvField = NULL;
-		funcItem->fieldList->type->u.function.argc = 0;
+		funcItem->fieldList->type->attr.function.argvField = NULL;
+		funcItem->fieldList->type->attr.function.argc = 0;
 	}
 	// 插入符号表
 	if (isConflict(RootTable, funcItem))
@@ -818,7 +818,7 @@ void VarList(NodePtr node, ItemPtr funcItem)
 
 	// VarList -> ParamDec COMMA VarList
 	FieldListPtr paramField = ParamDec(paramDecNode);
-	funcItem->fieldList->type->u.function.argvField = paramField;
+	funcItem->fieldList->type->attr.function.argvField = paramField;
 	curFiled = paramField;
 	argc++;
 	// 如果有多个参数
@@ -834,7 +834,7 @@ void VarList(NodePtr node, ItemPtr funcItem)
 			argc++;
 		}
 	}
-	funcItem->fieldList->type->u.function.argc = argc;
+	funcItem->fieldList->type->attr.function.argc = argc;
 }
 
 FieldListPtr ParamDec(NodePtr node)
@@ -1002,7 +1002,7 @@ void Args(NodePtr node, ItemPtr funcItem) {
 	printf("Args: %s\n", node->child->name);
 #endif
 	NodePtr argNode = node;
-	FieldListPtr argFiled = funcItem->fieldList->type->u.function.argvField;
+	FieldListPtr argFiled = funcItem->fieldList->type->attr.function.argvField;
 	while (argNode != NULL)
 	{
 		/* code */
@@ -1254,7 +1254,7 @@ void Dec(NodePtr node, TypePtr spec, ItemPtr stcItem)
 			// eg: struct A a[10];
 			ItemPtr varDecItem = VarDec(decNode->child, spec);
 			FieldListPtr VarDecField = varDecItem->fieldList;
-			FieldListPtr stcFiled = stcItem->fieldList->type->u.structure.field;
+			FieldListPtr stcFiled = stcItem->fieldList->type->attr.structure.field;
 			FieldListPtr curField = NULL;
 			while (stcFiled != NULL)
 			{
@@ -1270,7 +1270,7 @@ void Dec(NodePtr node, TypePtr spec, ItemPtr stcItem)
 			}
 			if (curField == NULL)
 			{
-				stcItem->fieldList->type->u.structure.field = VarDecField;
+				stcItem->fieldList->type->attr.structure.field = VarDecField;
 			}
 			else
 			{
@@ -1375,15 +1375,15 @@ TypePtr Exp(NodePtr node)
 		if (!strcmp(expNode->sibling->sibling->name, "Args"))
 		{
 			Args(expNode->sibling->sibling, funcItem);
-			return funcItem->fieldList->type->u.function.retType;
+			return funcItem->fieldList->type->attr.function.retType;
 		}
 		else
 		{
-			if (funcItem->fieldList->type->u.function.argc != 0)
+			if (funcItem->fieldList->type->attr.function.argc != 0)
 			{
 				reportError(MISMATCHED_PARAMETER, node->line, "Too few arguments to function");
 			}
-			return funcItem->fieldList->type->u.function.retType;
+			return funcItem->fieldList->type->attr.function.retType;
 		}
 	}
 	// Exp 运算符 Exp
@@ -1406,12 +1406,12 @@ TypePtr Exp(NodePtr node)
 				reportError(NOT_ARRAY, node->line, "Not array variable");
 				return NULL;
 			}
-			if (rightType->kind != BASIC_KIND || rightType->u.basic != INT_TYPE)
+			if (rightType->kind != BASIC_KIND || rightType->attr.basic != INT_TYPE)
 			{
 				reportError(NOT_INTEGER_INDEX, node->line, "Not integer index");
 				return NULL;
 			}
-			return leftType->u.array.elementType;
+			return leftType->attr.array.elementType;
 		}
 		//
 		else if (!strcmp(expNode->sibling->name, "DOT"))
@@ -1429,7 +1429,7 @@ TypePtr Exp(NodePtr node)
 				return NULL;
 			}
 			NodePtr idNode = expNode->sibling->sibling;
-			FieldListPtr curField = leftType->u.structure.field; 
+			FieldListPtr curField = leftType->attr.structure.field; 
 			while (curField != NULL) {
 				if (!strcmp(curField->name, idNode->value)) {
 					return curField->type;

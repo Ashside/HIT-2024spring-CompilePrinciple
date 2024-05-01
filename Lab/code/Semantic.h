@@ -24,21 +24,18 @@ typedef struct _Type
 	{	
 		// 基本类型
 		BasicTypeEnum basic;
-
 		// 数组类型
 		struct
 		{
 			TypePtr elementType;
 			int size;
 		} array;
-
 		// 结构体
 		struct 
 		{
 			char* structName;
 			FieldListPtr field;
 		} structure;
-
 		// 函数
 		struct 
 		{
@@ -46,8 +43,7 @@ typedef struct _Type
 			FieldListPtr argvField;
 			TypePtr retType;
 		} function;
-		
-	} u;
+	} attr;
 } Type;
 
 typedef struct _FieldList
