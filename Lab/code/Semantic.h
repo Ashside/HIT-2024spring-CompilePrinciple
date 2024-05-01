@@ -20,7 +20,7 @@ typedef struct _Type
 {
 	Kind kind; // 类型的种类
 	// 基本类型 数组 结构体 函数
-	union
+	struct
 	{	
 		// 基本类型
 		BasicTypeEnum basic;
@@ -89,6 +89,9 @@ int isStructItem(ItemPtr item);
 // 判断是否为函数表项
 int isFuncItem(ItemPtr item);
 
+char* cpString(char* src);
+TypePtr cpType(TypePtr src);
+FieldListPtr cpFieldList(FieldListPtr src);
 // 语义分析功能函数
 
 // 释放符号表

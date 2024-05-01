@@ -50,6 +50,64 @@ int isFuncItem(ItemPtr item)
 	}
 	return TRUE;
 }
+
+char *cpString(char *src)
+{
+	if (src == NULL)
+	{
+		return NULL;
+	}
+	int len = strlen(src) + 1;
+	char *dst = (char *)malloc(len * sizeof(char));
+	strncpy(dst, src, len);
+	return dst;
+}
+
+TypePtr cpType(TypePtr src)
+{
+	if (src == NULL)
+	{
+		return NULL;
+	}
+	TypePtr dst = (TypePtr)malloc(sizeof(Type));
+	dst->kind = src->kind;
+	switch (src->kind)
+	{
+	case BASIC_KIND:
+		dst->u.basic = src->u.basic;
+		break;
+	case ARRAY_KIND:
+		dst->u.array.elementType = cpType(src->u.array.elementType);
+		dst->u.array.size = src->u.array.size;
+		break;
+	case STRUCTURE_KIND:
+		dst->u.structure.structName = cpString(src->u.structure.structName);
+		dst->u.structure.field = cpFieldList(src->u.structure.field);
+		break;
+	case FUNCTION_KIND:
+		dst->u.function.argc = src->u.function.argc;
+		dst->u.function.argvField = cpFieldList(src->u.function.argvField);
+		dst->u.function.retType = cpType(src->u.function.retType);
+		break;
+	default:
+		break;
+	}
+	return dst;
+}
+
+FieldListPtr cpFieldList(FieldListPtr src)
+{
+	if (src == NULL)
+	{
+		return NULL;
+	}
+	FieldListPtr dst = (FieldListPtr)malloc(sizeof(FieldList));
+	dst->name = cpString(src->name);
+	dst->type = cpType(src->type);
+	dst->nextField = cpFieldList(src->nextField);
+	return dst;
+}
+
 void freeSymbolTable(TablePtr table)
 {
 #ifdef DEBUG_SEMANTIC_ANALYSIS
@@ -1212,11 +1270,11 @@ void Dec(NodePtr node, TypePtr spec, ItemPtr stcItem)
 			}
 			if (curField == NULL)
 			{
-				stcFiled->nextField->type->u.structure.field = varDecItem->fieldList;
+				stcItem->fieldList->type->u.structure.field = VarDecField;
 			}
 			else
 			{
-				curField->nextField = varDecItem->fieldList;
+				curField->nextField = VarDecField;
 			}
 			
 		}
@@ -1360,7 +1418,7 @@ TypePtr Exp(NodePtr node)
 		{
 			// Exp -> Exp DOT ID
 			// eg: a.b
-			TypePtr leftType = Exp(expNode);
+			TypePtr leftType = findItemByName(RootTable, expNode->child->value)->fieldList->type;
 			if (leftType == NULL)
 			{
 				return NULL;
