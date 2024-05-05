@@ -2,205 +2,174 @@
 #define SEMANTIC_H
 
 #define HASH_TABLE_SIZE 0x3fff
-#include "SemanTypeEnum.h"
+#define STACK_DEEP
+
 #include "SyntaxTree.h"
+#include "SemanTypeEnum.h"
+#define boolean int
+#define pNode NodePtr
+#define pTable TablePtr
+typedef struct type* pType;
+typedef struct fieldList* pFieldList;
+typedef struct tableItem* pItem;
+typedef struct hashTable* pHash;
+typedef struct stack* pStack;
+typedef struct table* pTable;
 
-//#define DEBUG_SEMANTIC_ANALYSIS
+typedef struct type {
+    Kind kind;
+    union {
+        // 基本类型
+        BasicType basic;
+        // 数组类型信息包括元素类型与数组大小构成
+        struct {
+            pType elem;
+            int size;
+        } array;
+        // 结构体类型信息是一个链表
+        struct {
+            char* structName;
+            pFieldList field;
+        } structure;
 
-typedef struct _Type *TypePtr;
-typedef struct _FieldList *FieldListPtr;
-typedef struct _TableItem *ItemPtr;
-typedef struct _HashTable *HashTablePtr;
-typedef struct _Table *TablePtr;
-
-
-
-
-typedef struct _Type
-{
-	Kind kind; // 类型的种类
-	// 基本类型 数组 结构体 函数
-	struct
-	{	
-		// 基本类型
-		BasicTypeEnum basic;
-		// 数组类型
-		struct
-		{
-			TypePtr elementType;
-			int size;
-		} array;
-		// 结构体
-		struct 
-		{
-			char* structName;
-			FieldListPtr field;
-		} structure;
-		// 函数
-		struct 
-		{
-			int argc;
-			FieldListPtr argvField;
-			TypePtr retType;
-		} function;
-	} attr;
+        struct {
+            int argc;          // argument counter
+            pFieldList argv;   // argument vector
+            pType returnType;  // returnType
+        } function;
+    } u;
 } Type;
 
-typedef struct _FieldList
-{
-	char *name; // 域的名字
-	TypePtr type;	// 域的类型
-	FieldListPtr nextField; // 下一个域
+typedef struct fieldList {
+    char* name;       // 域的名字
+    pType type;       // 域的类型
+    pFieldList tail;  // 下一个域
 } FieldList;
 
-
-typedef struct _TableItem
-{
-	FieldListPtr fieldList; // 变量的作用域，同时存放了变量的类型和名字
-	ItemPtr nextHashItem; // 下一个哈希值相同的符号
+typedef struct tableItem {
+    int symbolDepth;
+    pFieldList field;
+    pItem nextSymbol;  // same depth next symbol, linked from stack
+    pItem nextHash;    // same hash code next symbol, linked from hash table
 } TableItem;
 
-typedef struct _HashTable
-{
-	ItemPtr *tableItems; // 哈希表，类型是TableItem数组
+typedef struct hashTable {
+    pItem* hashArray;
 } HashTable;
 
-typedef struct _Table
-{
-	HashTablePtr hashTable; // 符号表的哈希表
-	int structNum; // 结构体的数量
+typedef struct stack {
+    pItem* stackArray;
+    int curStackDepth;
+} Stack;
+
+typedef struct table {
+    pHash hash;
+    pStack stack;
+    int unNamedStructNum;
+    // int enterStructLayer;
 } Table;
 
-// 导入符号表
-extern TablePtr RootTable;
+extern pTable table;
 
-// 功能函数
+// Type functions
+pType newType(Kind kind, ...);
+pType copyType(pType src);
+void deleteType(pType type);
+boolean checkType(pType type1, pType type2);
+void printType(pType type);
 
-// 哈希函数，根据名字生成哈希值
-unsigned int getHashIndex(char *name);
-// 错误报告函数
-void reportError(ErrorTypeEnum errorType, int line, const char *msg);
-// 判断是否为结构体表项
-int isStructItem(ItemPtr item);
-// 判断是否为函数表项
-int isFuncItem(ItemPtr item);
+// FieldList functions
 
-char* cpString(char* src);
-TypePtr cpType(TypePtr src);
-FieldListPtr cpFieldList(FieldListPtr src);
-// 语义分析功能函数
+// inline pFieldList newFieldList() {
+//     pFieldList p = (pFieldList)malloc(sizeof(FieldList));
+//     p->name = NULL;
+//     p->type = NULL;
+//     p->tail = NULL;
+//     return p;
+// }
 
-// 释放符号表
-void freeSymbolTable(TablePtr table);
-// 初始化符号表
-void initSymbolTable();
-// 语义分析
-void startSemantic(NodePtr node);
+pFieldList newFieldList(char* newName, pType newType);
+pFieldList copyFieldList(pFieldList src);
+void deleteFieldList(pFieldList fieldList);
+void setFieldListName(pFieldList p, char* newName);
+void printFieldList(pFieldList fieldList);
 
+// tableItem functions
 
-// 类型相关函数
-// Basic类型 传入类型种类int,float
-// Array类型 传入类型Type,size
-// Structure类型 传入结构体名name,FieldList
-// Function类型 传入参数个数argc,参数列表argvField,返回类型retType
-TypePtr createType(Kind kind,int argNum, ...);
-// 比较两个类型是否相同，相同返回TRUE，不同返回FALSE
-int compareType(TypePtr type1, TypePtr type2);
-void printType(TypePtr type);
-void freeType(TypePtr type);
+// inline pItem newItem() {
+//     pItem p = (pItem)malloc(sizeof(TableItem));
+//     p->symbolDepth = 0;
+//     p->field = NULL;
+//     p->nextHash = NULL;
+//     p->nextSymbol = NULL;
+//     return p;
+// }
 
+pItem newItem(int symbolDepth, pFieldList pfield);
+void deleteItem(pItem item);
+boolean isStructDef(pItem src);
 
+// Hash functions
+pHash newHash();
+void deleteHash(pHash hash);
+pItem getHashHead(pHash hash, int index);
+void setHashHead(pHash hash, int index, pItem newVal);
 
-// 域相关函数
-FieldListPtr createFieldList(char* name, TypePtr type);
-void printFieldList(FieldListPtr fieldList);
+// Stack functions
+pStack newStack();
+void deleteStack(pStack stack);
+void addStackDepth(pStack stack);
+void minusStackDepth(pStack stack);
+pItem getCurDepthStackHead(pStack stack);
+void setCurDepthStackHead(pStack stack, pItem newVal);
 
-void freeFieldList(FieldListPtr fieldList);
-void setFieldName(FieldListPtr fieldList,char * newName);
+// Table functions
+pTable initTable();
+void deleteTable(pTable table);
+pItem searchTableItem(pTable table, char* name);
+boolean checkTableItemConflict(pTable table, pItem item);
+void addTableItem(pTable table, pItem item);
+void deleteTableItem(pTable table, pItem item);
+void clearCurDepthStackList(pTable table);
+// void addStructLayer(pTable table);
+// void minusStructLayer(pTable table);
+// boolean isInStructLayer(pTable table);
+void printTable(pTable table);
 
+// Global functions
+static inline unsigned int getHashCode(char* name) {
+    unsigned int val = 0, i;
+    for (; *name; ++name) {
+        val = (val << 2) + *name;
+        if (i = val & ~HASH_TABLE_SIZE)
+            val = (val ^ (i >> 12)) & HASH_TABLE_SIZE;
+    }
+    return val;
+}
 
+static inline void pError(ErrorType type, int line, char* msg) {
+    printf("Error type %d at Line %d: %s\n", type, line, msg);
+}
 
-// 表项相关函数
-ItemPtr createItem(FieldListPtr fieldList);
-void printItem(ItemPtr item);
-void freeItem(ItemPtr item);
+void traverseTree(pNode node);
 
-
-// 哈希表相关函数
-HashTablePtr createHash();
-void freeHash(HashTablePtr hashTable);
-ItemPtr getHashHeadItem(HashTablePtr hashTable, int index);
-void setHashHeadItem(HashTablePtr hashTable,int index,ItemPtr newItemValue);
-
-
-
-// 符号表相关函数
-TablePtr createTable();
-void freeTable(TablePtr table);
-ItemPtr findItemByName(TablePtr table, char *name);
-int isConflict(TablePtr table, ItemPtr item);
-void insertTableItem(TablePtr table, ItemPtr item);
-void deleteTableItem(TablePtr table, ItemPtr item);
-void printTable(TablePtr table);
-
-
-// 产生式相关函数
-
-// 弃用
-void Program();
-// 弃用
-void ExtDefList();
-
-TypePtr StructSpecifier(NodePtr node);
-
-void FunDec(NodePtr node, TypePtr retType);
-
-void VarList(NodePtr node,ItemPtr funcItem);
-
-FieldListPtr ParamDec(NodePtr node);
-
-void CompSt(NodePtr node,TypePtr retType);
-
-void StmtList(NodePtr node,TypePtr retType);
-
-void Stmt(NodePtr node,TypePtr retType);
-
-void DefList(NodePtr node,ItemPtr stcItem);
-
-void Args(NodePtr node,ItemPtr funcItem);
-
-// ExtDef -> Specifier ExtDecList SEMI
-// ExtDef -> Specifier SEMI
-// ExtDef -> Specifier FunDec CompSt
-void ExtDef(NodePtr node);
-
-// Specifier -> TYPE
-TypePtr Specifier(NodePtr node);
-
-// ExtDecList -> VarDec
-// ExtDecList -> VarDec COMMA ExtDecList
-void ExtDecList(NodePtr node,TypePtr type);
-
-// VarDec -> ID
-// VarDec -> VarDec LB INT RB
-ItemPtr VarDec(NodePtr node, TypePtr spec);
-
-
-// Def -> Specifier DecList SEMI
-void Def(NodePtr node,ItemPtr stcItem);
-
-// DecList -> Dec
-// DecList -> Dec COMMA DecList
-void DecList(NodePtr node, TypePtr spec,ItemPtr stcItem);
-
-// Dec -> VarDec
-// Dec -> VarDec ASSIGNOP Exp
-void Dec(NodePtr node, TypePtr spec,ItemPtr stcItem);
-
-// Exp -> Exp ASSIGNOP Exp
-// Exp -> Exp AND Exp
-TypePtr Exp(NodePtr node);
-
-
+// Generate symbol table functions
+void ExtDef(pNode node);
+void ExtDecList(pNode node, pType specifier);
+pType Specifier(pNode node);
+pType StructSpecifier(pNode node);
+pItem VarDec(pNode node, pType specifier);
+void FunDec(pNode node, pType returnType);
+void VarList(pNode node, pItem func);
+pFieldList ParamDec(pNode node);
+void CompSt(pNode node, pType returnType);
+void StmtList(pNode node, pType returnType);
+void Stmt(pNode node, pType returnType);
+void DefList(pNode node, pItem structInfo);
+void Def(pNode node, pItem structInfo);
+void DecList(pNode node, pType specifier, pItem structInfo);
+void Dec(pNode node, pType specifier, pItem structInfo);
+pType Exp(pNode node);
+void Args(pNode node, pItem funcInfo);
 
 #endif // SEMANTIC_H

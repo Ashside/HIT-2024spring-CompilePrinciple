@@ -14,7 +14,7 @@
 typedef struct _Node
 {
 	TokenTypeEnum type;
-	int line;
+	int lineNo;
 	char *value; // 字面值，例如：int、a、1等
 	char *name;	 // 终结符或非终结符的名字，例如：ID、Program、ExtDefList等
 	struct _Node *child;
@@ -32,5 +32,12 @@ void addSibling(NodePtr node, NodePtr sibling);
 void freeNode(NodePtr node);
 void freeTree(NodePtr node);
 void printTree(NodePtr node, int depth);
-
+static inline char* newString(char* src) {
+    if (src == NULL) return NULL;
+    int length = strlen(src) + 1;
+    char* p = (char*)malloc(sizeof(char) * length);
+    assert(p != NULL);
+    strncpy(p, src, length);
+    return p;
+}
 #endif // SYNTAX_TREE_H

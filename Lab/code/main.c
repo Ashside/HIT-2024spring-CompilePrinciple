@@ -3,9 +3,9 @@
 #include "Semantic.h"
 //#define LAB1_ACTIVE
 #define LAB2_ACTIVE
+//#define LAB3_ACTIVE
 
 extern NodePtr RootNode;
-extern TablePtr RootTable;
 extern int yylineno;
 extern int yyparse();
 extern void yyrestart(FILE *);
@@ -40,15 +40,14 @@ int main(int argc, char **argv)
 #endif
 
 #ifdef LAB2_ACTIVE
-        initSymbolTable();
-        startSemantic(RootNode);
+        table = initTable();
+        // printTreeInfo(root, 0);
+        traverseTree(RootNode);
+        deleteTable(table);
 #endif
     }
 
-#ifdef LAB2_ACTIVE
 
-    freeSymbolTable(RootTable);
-#endif
     freeTree(RootNode);
 
     return 0;

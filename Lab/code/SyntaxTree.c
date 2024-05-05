@@ -13,7 +13,7 @@ NodePtr newTokenNode(TokenTypeEnum type, int line, char *name, char *value)
 	assert(node != NULL);
 
 	node->type = type;
-	node->line = line;
+	node->lineNo = line;
 
 	int nameLen = strlen(name);
 	node->name = (char *)malloc((nameLen + 1) * sizeof(char));
@@ -49,7 +49,7 @@ NodePtr newParseNode(TokenTypeEnum type, int line, char *name, int numChildren, 
 	assert(node != NULL);
 
 	node->type = type;
-	node->line = line;
+	node->lineNo = line;
 
 	int nameLen = strlen(name);
 	node->name = (char *)malloc((nameLen + 1) * sizeof(char));
@@ -131,7 +131,7 @@ void printTree(NodePtr node, int depth)
 	switch (node->type)
 	{
 	case TOKEN_NOTTOKEN:
-		printf(" (%d)", node->line);
+		printf(" (%d)", node->lineNo);
 		break;
 	case TOKEN_TYPE:
 	case TOKEN_ID:
