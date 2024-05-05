@@ -7,9 +7,15 @@
 #include <stdlib.h>
 #include <string.h>
 #include "TokenTypeEnum.h"
-//#define DEBUG_NEW_NODES
+
 #define TRUE 1
 #define FALSE 0
+
+#ifdef DEBUG_LAB1
+	#define DEBUG_NEW_NODES
+	#define LAB1_ACTIVE
+#endif
+
 
 typedef struct _Node
 {

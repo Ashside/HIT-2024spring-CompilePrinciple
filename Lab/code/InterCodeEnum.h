@@ -1,0 +1,4 @@
+#ifndef INTERCODEENUM_H
+#define INTERCODEENUM_H
+
+#endif

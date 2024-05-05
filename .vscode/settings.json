@@ -1,0 +1,9 @@
+{
+	"files.associations": {
+		"*.m": "matlab",
+		"stdlib.h": "c",
+		"semantic.h": "c",
+		"syntaxtree.h": "c",
+		"semantypeenum.h": "c"
+	}
+}
