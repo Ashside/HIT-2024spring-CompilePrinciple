@@ -2,9 +2,11 @@
 #include "SemanTypeEnum.h"
 TablePtr table;
 
-unsigned int getHashCode(char* name) {
+unsigned int getHashCode(char *name)
+{
     unsigned int val = 0, i;
-    for (; *name; ++name) {
+    for (; *name; ++name)
+    {
         val = (val << 2) + *name;
         if ((i = val & ~HASH_TABLE_SIZE))
             val = (val ^ (i >> 12)) & HASH_TABLE_SIZE;
@@ -12,11 +14,12 @@ unsigned int getHashCode(char* name) {
     return val;
 }
 
-void reportError(ErrorType type, int line, char* msg) {
+void reportError(ErrorType type, int line, char *msg)
+{
     printf("Error type %d at Line %d: %s\n", type, line, msg);
 }
 // Type functions
-TypePtr newType(Kind kind,int argNum ,...)
+TypePtr newType(Kind kind, int argNum, ...)
 {
     TypePtr p = (TypePtr)malloc(sizeof(Type));
     assert(p != NULL);
@@ -157,6 +160,28 @@ boolean checkType(TypePtr type1, TypePtr type2)
     }
 }
 
+int sizeOfType(TypePtr type)
+{
+    if (type == NULL)
+        return 0;
+    if (type->kind == BASIC)
+        return 4;
+    if (type->kind == ARRAY)
+        return type->u.array.size * sizeOfType(type->u.array.elem);
+    if (type->kind == STRUCTURE)
+    {
+        FieldListPtr temp = type->u.structure.field;
+        int size = 0;
+        while (temp)
+        {
+            size += sizeOfType(temp->type);
+            temp = temp->tail;
+        }
+        return size;
+    }
+    return 0;
+}
+
 // FieldList functions
 FieldListPtr newFieldList(char *newName, TypePtr newType)
 {
@@ -218,7 +243,6 @@ void setFieldListName(FieldListPtr p, char *newName)
     // strncpy(p->name, newName, length);
     p->name = newString(newName);
 }
-
 
 // tableItem functions
 ItemPtr newItem(int symbolDepth, FieldListPtr pfield)
@@ -320,8 +344,7 @@ ItemPtr searchTableItem(TablePtr table, char *name)
     return NULL;
 }
 
-// Return false -> no confliction, true -> has confliction
-boolean checkTableItemConflict(TablePtr table, ItemPtr item)
+int checkTableItemConflict(TablePtr table, ItemPtr item)
 {
     ItemPtr temp = searchTableItem(table, item->field->name);
     if (temp == NULL)
@@ -385,7 +408,6 @@ boolean isStructDef(ItemPtr src)
     return TRUE;
 }
 
-
 void clearCurDepthStackList(TablePtr table)
 {
     assert(table != NULL);
@@ -400,7 +422,6 @@ void clearCurDepthStackList(TablePtr table)
     setCurDepthStackHead(stack, NULL);
     minusStackDepth(stack);
 }
-
 
 // Stack functions
 StackPtr newStack()
@@ -457,10 +478,10 @@ void preTree(NodePtr node)
     if (node == NULL)
         return;
 
-    if (!strcmp(node->name, "ExtDef")){
+    if (!strcmp(node->name, "ExtDef"))
+    {
         ExtDef(node);
     }
-        
 
     preTree(node->child);
     preTree(node->sibling);
@@ -541,11 +562,11 @@ TypePtr Specifier(NodePtr node)
     {
         if (!strcmp(t->value, "float"))
         {
-            return newType(BASIC, 1,FLOAT_TYPE);
+            return newType(BASIC, 1, FLOAT_TYPE);
         }
         else
         {
-            return newType(BASIC,1, INT_TYPE);
+            return newType(BASIC, 1, INT_TYPE);
         }
     }
     // Specifier -> StructSpecifier
@@ -572,7 +593,7 @@ TypePtr StructSpecifier(NodePtr node)
         // addStructLayer(table);
         ItemPtr structItem =
             newItem(table->stack->curStackDepth,
-                    newFieldList("", newType(STRUCTURE, 2,NULL, NULL)));
+                    newFieldList("", newType(STRUCTURE, 2, NULL, NULL)));
         if (!strcmp(t->name, "OptTag"))
         {
             setFieldListName(structItem->field, t->child->value);
@@ -604,7 +625,7 @@ TypePtr StructSpecifier(NodePtr node)
         else
         {
             returnType = newType(
-                STRUCTURE, 2,newString(structItem->field->name),
+                STRUCTURE, 2, newString(structItem->field->name),
                 copyFieldList(structItem->field->type->u.structure.field));
 
             // printf("\nnew Type:\n");
@@ -639,7 +660,7 @@ TypePtr StructSpecifier(NodePtr node)
         }
         else
             returnType = newType(
-                STRUCTURE, 2,newString(structItem->field->name),
+                STRUCTURE, 2, newString(structItem->field->name),
                 copyFieldList(structItem->field->type->u.structure.field));
     }
     // printType(returnType);
@@ -673,7 +694,7 @@ ItemPtr VarDec(NodePtr node, TypePtr specifier)
             // printf("number: %s\n", varDec->next->next->val);
             // printf("temp type: %d\n", temp->kind);
             p->field->type =
-                newType(ARRAY, 2,copyType(temp), atoi(varDec->sibling->sibling->value));
+                newType(ARRAY, 2, copyType(temp), atoi(varDec->sibling->sibling->value));
             temp = p->field->type;
             varDec = varDec->child;
         }
@@ -685,7 +706,6 @@ ItemPtr VarDec(NodePtr node, TypePtr specifier)
     return p;
 }
 
-
 void FunDec(NodePtr node, TypePtr returnType)
 {
     assert(node != NULL);
@@ -694,7 +714,7 @@ void FunDec(NodePtr node, TypePtr returnType)
     ItemPtr p =
         newItem(table->stack->curStackDepth,
                 newFieldList(node->child->value,
-                             newType(FUNCTION, 3,0, NULL, copyType(returnType))));
+                             newType(FUNCTION, 3, 0, NULL, copyType(returnType))));
 
     // FunDec -> ID LP VarList RP
     if (!strcmp(node->child->sibling->sibling->name, "VarList"))
@@ -837,7 +857,7 @@ void Stmt(NodePtr node, TypePtr returnType)
         // check return type
         if (!checkType(returnType, exTypePtr))
             reportError(TYPE_MISMATCH_RETURN, node->lineNo,
-                   "Type mismatched for return.");
+                        "Type mismatched for return.");
     }
 
     // Stmt -> IF LP Exp RP Stmt
@@ -977,7 +997,7 @@ void Dec(NodePtr node, TypePtr specifier, ItemPtr structInfo)
         {
             // 结构体内不能赋值，报错
             reportError(REDEF_FEILD, node->lineNo,
-                   "Illegal initialize variable in struct.");
+                        "Illegal initialize variable in struct.");
         }
         else
         {
@@ -999,14 +1019,14 @@ void Dec(NodePtr node, TypePtr specifier, ItemPtr structInfo)
                 // 类型不相符
                 // 报错
                 reportError(TYPE_MISMATCH_ASSIGN, node->lineNo,
-                       "Type mismatchedfor assignment.");
+                            "Type mismatchedfor assignment.");
                 deleteItem(decitem);
             }
             if (decitem->field->type && decitem->field->type->kind == ARRAY)
             {
                 // 报错，对非basic类型赋值
                 reportError(TYPE_MISMATCH_ASSIGN, node->lineNo,
-                       "Illegal initialize variable.");
+                            "Illegal initialize variable.");
                 deleteItem(decitem);
             }
             else
@@ -1065,8 +1085,8 @@ TypePtr Exp(NodePtr node)
                 {
                     // 报错，左值
                     reportError(LEFT_VAR_ASSIGN, t->lineNo,
-                           "The left-hand side of an assignment must be "
-                           "avariable.");
+                                "The left-hand side of an assignment must be "
+                                "avariable.");
                 }
                 else if (!strcmp(tchild->name, "ID") ||
                          !strcmp(tchild->sibling->name, "LB") ||
@@ -1076,7 +1096,7 @@ TypePtr Exp(NodePtr node)
                     {
                         // 报错，类型不匹配
                         reportError(TYPE_MISMATCH_ASSIGN, t->lineNo,
-                               "Type mismatched for assignment.");
+                                    "Type mismatched for assignment.");
                     }
                     else
                         returnType = copyType(p1);
@@ -1085,8 +1105,8 @@ TypePtr Exp(NodePtr node)
                 {
                     // 报错，左值
                     reportError(LEFT_VAR_ASSIGN, t->lineNo,
-                           "The left-hand side of an assignment must be "
-                           "avariable.");
+                                "The left-hand side of an assignment must be "
+                                "avariable.");
                 }
             }
             // Exp -> Exp AND Exp
@@ -1102,13 +1122,13 @@ TypePtr Exp(NodePtr node)
                 {
                     // 报错，数组，结构体运算
                     reportError(TYPE_MISMATCH_OP, t->lineNo,
-                           "Type mismatched for operands.");
+                                "Type mismatched for operands.");
                 }
                 else if (!checkType(p1, p2))
                 {
                     // 报错，类型不匹配
                     reportError(TYPE_MISMATCH_OP, t->lineNo,
-                           "Type mismatched for operands.");
+                                "Type mismatched for operands.");
                 }
                 else
                 {
@@ -1298,12 +1318,12 @@ TypePtr Exp(NodePtr node)
         // Exp -> FLOAT
         if (!strcmp(t->name, "FLOAT"))
         {
-            return newType(BASIC,1, FLOAT_TYPE);
+            return newType(BASIC, 1, FLOAT_TYPE);
         }
         // Exp -> INT
         else
         {
-            return newType(BASIC, 1,INT_TYPE);
+            return newType(BASIC, 1, INT_TYPE);
         }
     }
 }

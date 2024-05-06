@@ -71,51 +71,50 @@ typedef struct table {
 
 extern TablePtr table;
 
-TypePtr newType(Kind kind, int argNum,...);
-TypePtr copyType(TypePtr src);
-void deleteType(TypePtr type);
-boolean checkType(TypePtr type1, TypePtr type2);
+unsigned int getHashCode(char* name);
+void reportError(ErrorType type, int line, char* msg);
+void preTree(NodePtr node);
 
-FieldListPtr newFieldList(char* newName, TypePtr newType);
-FieldListPtr copyFieldList(FieldListPtr src);
-void deleteFieldList(FieldListPtr fieldList);
+
+boolean checkType(TypePtr type1, TypePtr type2);
+int sizeOfType(TypePtr type);
+
 void setFieldListName(FieldListPtr p, char* newName);
 
-
-ItemPtr newItem(int symbolDepth, FieldListPtr pfield);
-void deleteItem(ItemPtr item);
 boolean isStructDef(ItemPtr src);
 
-// Hash functions
-HashPtr newHash();
-void deleteHash(HashPtr hash);
 ItemPtr getHashHead(HashPtr hash, int index);
 void setHashHead(HashPtr hash, int index, ItemPtr newVal);
 
-// Stack functions
-StackPtr newStack();
-void deleteStack(StackPtr stack);
 void addStackDepth(StackPtr stack);
 void minusStackDepth(StackPtr stack);
 ItemPtr getCurDepthStackHead(StackPtr stack);
 void setCurDepthStackHead(StackPtr stack, ItemPtr newVal);
 
-// Table functions
-TablePtr initTable();
-void deleteTable(TablePtr table);
 ItemPtr searchTableItem(TablePtr table, char* name);
-boolean checkTableItemConflict(TablePtr table, ItemPtr item);
+int checkTableItemConflict(TablePtr table, ItemPtr item);
 void addTableItem(TablePtr table, ItemPtr item);
-void deleteTableItem(TablePtr table, ItemPtr item);
 void clearCurDepthStackList(TablePtr table);
 
+TypePtr newType(Kind kind, int argNum,...);
+ItemPtr newItem(int symbolDepth, FieldListPtr pfield);
+FieldListPtr newFieldList(char* newName, TypePtr newType);
+HashPtr newHash();
+StackPtr newStack();
+TablePtr initTable();
 
-// Global functions
-unsigned int getHashCode(char* name);
-void reportError(ErrorType type, int line, char* msg);
+TypePtr copyType(TypePtr src);
+FieldListPtr copyFieldList(FieldListPtr src);
 
 
-void preTree(NodePtr node);
+void deleteType(TypePtr type);
+void deleteFieldList(FieldListPtr fieldList);
+void deleteItem(ItemPtr item);
+void deleteHash(HashPtr hash);
+void deleteStack(StackPtr stack);
+void deleteTable(TablePtr table);
+void deleteTableItem(TablePtr table, ItemPtr item);
+
 
 
 void ExtDef(NodePtr node);
