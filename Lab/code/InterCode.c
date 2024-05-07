@@ -8,8 +8,9 @@ InterCodeList *interCodeList;
 Operand *newOperand(OperandEnum kind, ...)
 {
 	// 如果是OP_CONSTANT，那么value是int类型
-	// 否则name是char *类型
-	// TODO 考虑使用void *类型传入参数
+	// 否则value是char *类型
+	// 使用va_list来处理可变参数，此处可以不指明参数个数
+	// 实际上相当于void*
 #ifdef DEBUG_INTER_CODE_GENERATION
 	printf("newOperand: %d\n", kind);
 #endif
@@ -17,6 +18,8 @@ Operand *newOperand(OperandEnum kind, ...)
 	op->kind = kind;
 	va_list ap;
 	va_start(ap, kind);
+
+	// 仅常数类型的操作数需要处理int类型的参数
 	switch (kind)
 	{
 	case OP_CONSTANT:
@@ -32,6 +35,7 @@ Operand *newOperand(OperandEnum kind, ...)
 	default:
 		break;
 	}
+
 	va_end(ap);
 #ifdef DEBUG_INTER_CODE_GENERATION
 	printf("end newOperand\n");
@@ -39,6 +43,8 @@ Operand *newOperand(OperandEnum kind, ...)
 	return op;
 }
 
+/// 释放操作数
+/// @param op 操作数
 void freeOperand(Operand *op)
 {
 	if (op == NULL)
@@ -48,11 +54,17 @@ void freeOperand(Operand *op)
 	free(op);
 }
 
-void setOperand(Operand *op, OperandEnum kind, int argNum,...)
+/// 设置操作数的值
+/// @param op 操作数
+/// @param kind 操作数类型
+/// @param argNum 参数个数
+/// @param ... 参数列表，如果是OP_CONSTANT，那么是int类型，否则是char *类型
+void setOperand(Operand *op, OperandEnum kind, int argNum, ...)
 {
 #ifdef DEBUG_INTER_CODE_GENERATION
 	printf("setOperand: %d\n", kind);
 #endif
+
 	va_list ap;
 	op->kind = kind;
 	switch (kind)
@@ -85,46 +97,39 @@ void setOperand(Operand *op, OperandEnum kind, int argNum,...)
 #endif
 }
 
+/// 打印操作数/
+/// 
+/// 根据操作数的类型，向文件中打印操作数的值，这里文件指针一般是stdout
+/// @param file 文件指针
+/// @param op 操作数
+/// 
 void printOperand(FILE *file, Operand *op)
 {
 	if (op == NULL)
 	{
 		return;
 	}
-	if (file == NULL)
+
+	switch (op->kind)
 	{
-		switch (op->kind)
-		{
-		case OP_CONSTANT:
-			printf("#%d", op->u.value);
-			break;
-		case OP_VARIABLE:
-		case OP_ADDRESS:
-		case OP_LABEL:
-		case OP_FUNCTION:
-		case OP_RELOP:
-			printf("%s", op->u.name);
-			break;
-		}
-	}
-	else
-	{
-		switch (op->kind)
-		{
-		case OP_CONSTANT:
-			fprintf(file, "#%d", op->u.value);
-			break;
-		case OP_VARIABLE:
-		case OP_ADDRESS:
-		case OP_LABEL:
-		case OP_FUNCTION:
-		case OP_RELOP:
-			fprintf(file, "%s", op->u.name);
-			break;
-		}
+	case OP_CONSTANT:
+		fprintf(file, "#%d", op->u.value);
+		break;
+	case OP_VARIABLE:
+	case OP_ADDRESS:
+	case OP_LABEL:
+	case OP_FUNCTION:
+	case OP_RELOP:
+		fprintf(file, "%s", op->u.name);
+		break;
 	}
 }
 
+
+/// 生成中间代码InterCode
+/// @param kind 中间代码类型(InterCodeEnum)
+/// @param argNum 参数个数
+/// @param ... 参数列表，参照指导书中的顺序从左到右给出
 InterCode *newInterCode(InterCodeEnum kind, int argNum, ...)
 {
 	InterCode *code = (InterCode *)malloc(sizeof(InterCode));
@@ -171,6 +176,8 @@ InterCode *newInterCode(InterCodeEnum kind, int argNum, ...)
 	return code;
 }
 
+/// 释放中间代码
+/// @param code 中间代码
 void freeInterCode(InterCode *code)
 {
 	if (code == NULL)
@@ -180,6 +187,8 @@ void freeInterCode(InterCode *code)
 	free(code);
 }
 
+/// 生成中间代码双向链表节点
+/// @param code 中间代码
 InterCodeSS *newInterCodeSS(InterCode *code)
 {
 	InterCodeSS *codeSS = (InterCodeSS *)malloc(sizeof(InterCodeSS));
@@ -189,6 +198,8 @@ InterCodeSS *newInterCodeSS(InterCode *code)
 	return codeSS;
 }
 
+/// 释放中间代码双向链表节点
+/// @param codeSS 中间代码双向链表节点
 void freeInterCodeSS(InterCodeSS *codeSS)
 {
 	if (codeSS == NULL)
@@ -199,230 +210,124 @@ void freeInterCodeSS(InterCodeSS *codeSS)
 	free(codeSS);
 }
 
+
+/// 打印中间代码节点
+/// @param file 文件指针
+/// @param codeSS 中间代码节点
 void printInterCodeSS(FILE *file, InterCodeSS *codeSS)
 {
-	if (file == NULL)
+
+	switch (codeSS->code.kind)
 	{
-		switch (codeSS->code.kind)
-		{
-		case IR_LABEL:
-			printf("LABEL ");
-			printOperand(file, codeSS->code.u.singleOp.op);
-			printf(" :");
-			break;
-		case IR_FUNCTION:
-			printf("FUNCTION ");
-			printOperand(file, codeSS->code.u.singleOp.op);
-			printf(" :");
-			break;
-		case IR_ASSIGN:
-			printOperand(file, codeSS->code.u.assign.left);
-			printf(" := ");
-			printOperand(file, codeSS->code.u.assign.right);
-			break;
-		case IR_ADD:
-			printOperand(file, codeSS->code.u.doubleOp.result);
-			printf(" := ");
-			printOperand(file, codeSS->code.u.doubleOp.op1);
-			printf(" + ");
-			printOperand(file, codeSS->code.u.doubleOp.op2);
-			break;
-		case IR_SUB:
-			printOperand(file, codeSS->code.u.doubleOp.result);
-			printf(" := ");
-			printOperand(file, codeSS->code.u.doubleOp.op1);
-			printf(" - ");
-			printOperand(file, codeSS->code.u.doubleOp.op2);
-			break;
-		case IR_MUL:
-			printOperand(file, codeSS->code.u.doubleOp.result);
-			printf(" := ");
-			printOperand(file, codeSS->code.u.doubleOp.op1);
-			printf(" * ");
-			printOperand(file, codeSS->code.u.doubleOp.op2);
-			break;
-		case IR_DIV:
-			printOperand(file, codeSS->code.u.doubleOp.result);
-			printf(" := ");
-			printOperand(file, codeSS->code.u.doubleOp.op1);
-			printf(" / ");
-			printOperand(file, codeSS->code.u.doubleOp.op2);
-			break;
-		case IR_GET_ADDR:
-			printOperand(file, codeSS->code.u.assign.left);
-			printf(" := &");
-			printOperand(file, codeSS->code.u.assign.right);
-			break;
-		case IR_READ_ADDR:
-			printOperand(file, codeSS->code.u.assign.left);
-			printf(" := *");
-			printOperand(file, codeSS->code.u.assign.right);
-			break;
-		case IR_WRITE_ADDR:
-			printf("*");
-			printOperand(file, codeSS->code.u.assign.left);
-			printf(" := ");
-			printOperand(file, codeSS->code.u.assign.right);
-			break;
-		case IR_GOTO:
-			printf("GOTO ");
-			printOperand(file, codeSS->code.u.singleOp.op);
-			break;
-		case IR_IF_GOTO:
-			printf("IF ");
-			printOperand(file, codeSS->code.u.condJmp.x);
-			printf(" ");
-			printOperand(file, codeSS->code.u.condJmp.relop);
-			printf(" ");
-			printOperand(file, codeSS->code.u.condJmp.y);
-			printf(" GOTO ");
-			printOperand(file, codeSS->code.u.condJmp.z);
-			break;
-		case IR_RETURN:
-			printf("RETURN ");
-			printOperand(file, codeSS->code.u.singleOp.op);
-			break;
-		case IR_DEC:
-			printf("DEC ");
-			printOperand(file, codeSS->code.u.decSize.op);
-			printf(" %d", codeSS->code.u.decSize.size);
-			break;
-		case IR_ARG:
-			printf("ARG ");
-			printOperand(file, codeSS->code.u.singleOp.op);
-			break;
-		case IR_CALL:
-			printOperand(file, codeSS->code.u.assign.left);
-			printf(" := CALL ");
-			printOperand(file, codeSS->code.u.assign.right);
-			break;
-		case IR_PARAM:
-			printf("PARAM ");
-			printOperand(file, codeSS->code.u.singleOp.op);
-			break;
-		case IR_READ:
-			printf("READ ");
-			printOperand(file, codeSS->code.u.singleOp.op);
-			break;
-		case IR_WRITE:
-			printf("WRITE ");
-			printOperand(file, codeSS->code.u.singleOp.op);
-			break;
-		}
-		printf("\n");
+	case IR_LABEL:
+		fprintf(file, "LABEL ");
+		printOperand(file, codeSS->code.u.singleOp.op);
+		fprintf(file, " :");
+		break;
+	case IR_FUNCTION:
+		fprintf(file, "FUNCTION ");
+		printOperand(file, codeSS->code.u.singleOp.op);
+		fprintf(file, " :");
+		break;
+	case IR_ASSIGN:
+		printOperand(file, codeSS->code.u.assign.left);
+		fprintf(file, " := ");
+		printOperand(file, codeSS->code.u.assign.right);
+		break;
+	case IR_ADD:
+		printOperand(file, codeSS->code.u.doubleOp.result);
+		fprintf(file, " := ");
+		printOperand(file, codeSS->code.u.doubleOp.op1);
+		fprintf(file, " + ");
+		printOperand(file, codeSS->code.u.doubleOp.op2);
+		break;
+	case IR_SUB:
+		printOperand(file, codeSS->code.u.doubleOp.result);
+		fprintf(file, " := ");
+		printOperand(file, codeSS->code.u.doubleOp.op1);
+		fprintf(file, " - ");
+		printOperand(file, codeSS->code.u.doubleOp.op2);
+		break;
+	case IR_MUL:
+		printOperand(file, codeSS->code.u.doubleOp.result);
+		fprintf(file, " := ");
+		printOperand(file, codeSS->code.u.doubleOp.op1);
+		fprintf(file, " * ");
+		printOperand(file, codeSS->code.u.doubleOp.op2);
+		break;
+	case IR_DIV:
+		printOperand(file, codeSS->code.u.doubleOp.result);
+		fprintf(file, " := ");
+		printOperand(file, codeSS->code.u.doubleOp.op1);
+		fprintf(file, " / ");
+		printOperand(file, codeSS->code.u.doubleOp.op2);
+		break;
+	case IR_GET_ADDR:
+		printOperand(file, codeSS->code.u.assign.left);
+		fprintf(file, " := &");
+		printOperand(file, codeSS->code.u.assign.right);
+		break;
+	case IR_READ_ADDR:
+		printOperand(file, codeSS->code.u.assign.left);
+		fprintf(file, " := *");
+		printOperand(file, codeSS->code.u.assign.right);
+		break;
+	case IR_WRITE_ADDR:
+		fprintf(file, "*");
+		printOperand(file, codeSS->code.u.assign.left);
+		fprintf(file, " := ");
+		printOperand(file, codeSS->code.u.assign.right);
+		break;
+	case IR_GOTO:
+		fprintf(file, "GOTO ");
+		printOperand(file, codeSS->code.u.singleOp.op);
+		break;
+	case IR_IF_GOTO:
+		fprintf(file, "IF ");
+		printOperand(file, codeSS->code.u.condJmp.x);
+		fprintf(file, " ");
+		printOperand(file, codeSS->code.u.condJmp.relop);
+		fprintf(file, " ");
+		printOperand(file, codeSS->code.u.condJmp.y);
+		fprintf(file, " GOTO ");
+		printOperand(file, codeSS->code.u.condJmp.z);
+		break;
+	case IR_RETURN:
+		fprintf(file, "RETURN ");
+		printOperand(file, codeSS->code.u.singleOp.op);
+		break;
+	case IR_DEC:
+		fprintf(file, "DEC ");
+		printOperand(file, codeSS->code.u.decSize.op);
+		fprintf(file, " %d", codeSS->code.u.decSize.size);
+		break;
+	case IR_ARG:
+		fprintf(file, "ARG ");
+		printOperand(file, codeSS->code.u.singleOp.op);
+		break;
+	case IR_CALL:
+		printOperand(file, codeSS->code.u.assign.left);
+		fprintf(file, " := CALL ");
+		printOperand(file, codeSS->code.u.assign.right);
+		break;
+	case IR_PARAM:
+		fprintf(file, "PARAM ");
+		printOperand(file, codeSS->code.u.singleOp.op);
+		break;
+	case IR_READ:
+		fprintf(file, "READ ");
+		printOperand(file, codeSS->code.u.singleOp.op);
+		break;
+	case IR_WRITE:
+		fprintf(file, "WRITE ");
+		printOperand(file, codeSS->code.u.singleOp.op);
+		break;
 	}
-	else
-	{
-		switch (codeSS->code.kind)
-		{
-		case IR_LABEL:
-			fprintf(file, "LABEL ");
-			printOperand(file, codeSS->code.u.singleOp.op);
-			fprintf(file, " :");
-			break;
-		case IR_FUNCTION:
-			fprintf(file, "FUNCTION ");
-			printOperand(file, codeSS->code.u.singleOp.op);
-			fprintf(file, " :");
-			break;
-		case IR_ASSIGN:
-			printOperand(file, codeSS->code.u.assign.left);
-			fprintf(file, " := ");
-			printOperand(file, codeSS->code.u.assign.right);
-			break;
-		case IR_ADD:
-			printOperand(file, codeSS->code.u.doubleOp.result);
-			fprintf(file, " := ");
-			printOperand(file, codeSS->code.u.doubleOp.op1);
-			fprintf(file, " + ");
-			printOperand(file, codeSS->code.u.doubleOp.op2);
-			break;
-		case IR_SUB:
-			printOperand(file, codeSS->code.u.doubleOp.result);
-			fprintf(file, " := ");
-			printOperand(file, codeSS->code.u.doubleOp.op1);
-			fprintf(file, " - ");
-			printOperand(file, codeSS->code.u.doubleOp.op2);
-			break;
-		case IR_MUL:
-			printOperand(file, codeSS->code.u.doubleOp.result);
-			fprintf(file, " := ");
-			printOperand(file, codeSS->code.u.doubleOp.op1);
-			fprintf(file, " * ");
-			printOperand(file, codeSS->code.u.doubleOp.op2);
-			break;
-		case IR_DIV:
-			printOperand(file, codeSS->code.u.doubleOp.result);
-			fprintf(file, " := ");
-			printOperand(file, codeSS->code.u.doubleOp.op1);
-			fprintf(file, " / ");
-			printOperand(file, codeSS->code.u.doubleOp.op2);
-			break;
-		case IR_GET_ADDR:
-			printOperand(file, codeSS->code.u.assign.left);
-			fprintf(file, " := &");
-			printOperand(file, codeSS->code.u.assign.right);
-			break;
-		case IR_READ_ADDR:
-			printOperand(file, codeSS->code.u.assign.left);
-			fprintf(file, " := *");
-			printOperand(file, codeSS->code.u.assign.right);
-			break;
-		case IR_WRITE_ADDR:
-			fprintf(file, "*");
-			printOperand(file, codeSS->code.u.assign.left);
-			fprintf(file, " := ");
-			printOperand(file, codeSS->code.u.assign.right);
-			break;
-		case IR_GOTO:
-			fprintf(file, "GOTO ");
-			printOperand(file, codeSS->code.u.singleOp.op);
-			break;
-		case IR_IF_GOTO:
-			fprintf(file, "IF ");
-			printOperand(file, codeSS->code.u.condJmp.x);
-			fprintf(file, " ");
-			printOperand(file, codeSS->code.u.condJmp.relop);
-			fprintf(file, " ");
-			printOperand(file, codeSS->code.u.condJmp.y);
-			fprintf(file, " GOTO ");
-			printOperand(file, codeSS->code.u.condJmp.z);
-			break;
-		case IR_RETURN:
-			fprintf(file, "RETURN ");
-			printOperand(file, codeSS->code.u.singleOp.op);
-			break;
-		case IR_DEC:
-			fprintf(file, "DEC ");
-			printOperand(file, codeSS->code.u.decSize.op);
-			fprintf(file, " %d", codeSS->code.u.decSize.size);
-			break;
-		case IR_ARG:
-			fprintf(file, "ARG ");
-			printOperand(file, codeSS->code.u.singleOp.op);
-			break;
-		case IR_CALL:
-			printOperand(file, codeSS->code.u.assign.left);
-			fprintf(file, " := CALL ");
-			printOperand(file, codeSS->code.u.assign.right);
-			break;
-		case IR_PARAM:
-			fprintf(file, "PARAM ");
-			printOperand(file, codeSS->code.u.singleOp.op);
-			break;
-		case IR_READ:
-			fprintf(file, "READ ");
-			printOperand(file, codeSS->code.u.singleOp.op);
-			break;
-		case IR_WRITE:
-			fprintf(file, "WRITE ");
-			printOperand(file, codeSS->code.u.singleOp.op);
-			break;
-		}
-		fprintf(file, "\n");
-	}
+	fprintf(file, "\n");
 }
 
+/// 生成中间代码双向链表
+/// @return 中间代码双向链表/
 InterCodeList *newInterCodeList()
 {
 	InterCodeList *list = (InterCodeList *)malloc(sizeof(InterCodeList));
@@ -435,6 +340,8 @@ InterCodeList *newInterCodeList()
 	return list;
 }
 
+/// 释放中间代码双向链表
+/// @param list 中间代码双向链表
 void freeInterCodeList(InterCodeList *list)
 {
 	if (list == NULL)
@@ -451,12 +358,16 @@ void freeInterCodeList(InterCodeList *list)
 	free(list);
 }
 
+/// 将一个中间代码节点插入到中间代码双向链表cur指针之后
+/// @param list 中间代码双向链表
+/// @param codeSS 中间代码节点
 void addInterCodeSS(InterCodeList *list, InterCodeSS *codeSS)
 {
 	if (list == NULL || codeSS == NULL)
 	{
 		return;
 	}
+	// 如果链表为空，那么直接插入
 	if (list->head == NULL)
 	{
 		list->head = codeSS;
@@ -465,13 +376,16 @@ void addInterCodeSS(InterCodeList *list, InterCodeSS *codeSS)
 	else
 	{
 		// 将codeSS插入到list的游标cur之后
-		// 涉及到插入中间节点的操作
 		list->cur->next = codeSS;
 		codeSS->prev = list->cur;
 		list->cur = codeSS;
 	}
 }
 
+
+/// 打印中间代码双向链表
+/// @param file 文件指针
+/// @param list 中间代码双向链表
 void printInterCodeList(FILE *file, InterCodeList *list)
 {
 	InterCodeSS *p = list->head;
@@ -483,6 +397,8 @@ void printInterCodeList(FILE *file, InterCodeList *list)
 	}
 }
 
+/// 在函数声明中单个参数的翻译，将参数处理为一个链表
+/// @param op 作为参数的操作数
 Argument *newArgument(Operand *op)
 {
 	Argument *arg = (Argument *)malloc(sizeof(Argument));
@@ -491,6 +407,8 @@ Argument *newArgument(Operand *op)
 	return arg;
 }
 
+/// 释放参数
+/// @param arg 参数
 void freeArgument(Argument *arg)
 {
 	if (arg == NULL)
@@ -501,6 +419,8 @@ void freeArgument(Argument *arg)
 	free(arg);
 }
 
+
+/// 生成参数链表
 ArgList *newArgList()
 {
 	ArgList *list = (ArgList *)malloc(sizeof(ArgList));
@@ -509,6 +429,8 @@ ArgList *newArgList()
 	return list;
 }
 
+/// 释放参数链表
+/// @param argList 参数链表
 void freeArgList(ArgList *argList)
 {
 	if (argList == NULL)
@@ -525,6 +447,9 @@ void freeArgList(ArgList *argList)
 	free(argList);
 }
 
+/// @brief 向参数链表中添加参数
+/// @param argList 
+/// @param arg 
 void addArg(ArgList *argList, Argument *arg)
 {
 	if (argList == NULL || arg == NULL)
@@ -543,15 +468,19 @@ void addArg(ArgList *argList, Argument *arg)
 	}
 }
 
+/// @brief 新生成一个临时操作数变量，该变量的名字为t+编号
+/// @return  返回一个临时操作数变量
 Operand *newTempVar()
 {
 	Operand *op = newOperand(OP_VARIABLE, "t");
 	op->u.name = (char *)malloc(sizeof(char) * 10);
 	sprintf(op->u.name, "t%d", interCodeList->tempVarNum);
-	interCodeList->tempVarNum++;
+	interCodeList->tempVarNum++; // 临时变量编号加一
 	return op;
 }
 
+/// @brief  新生成一个标签操作数变量，该变量的名字为label+编号
+/// @return  返回一个标签操作数变量
 Operand *newLabel()
 {
 	Operand *op = newOperand(OP_LABEL, "label");
@@ -561,6 +490,8 @@ Operand *newLabel()
 	return op;
 }
 
+/// @brief 开始生成中间代码节点
+/// @param root 
 void generateInterCodeSS(Node *root)
 {
 	if (root == NULL)
@@ -579,7 +510,7 @@ void generateInterCodeSS(Node *root)
 }
 
 // 生成中间代码
-// 参数顺序：kind, argNum, arg1, arg2, arg3
+// 参数顺序：kind, argNum, arg1, arg2, arg3, arg4
 // 1参中间码 LABEL x
 // 2参中间码 x := y
 // 3参中间码 x := y + z
@@ -694,6 +625,8 @@ void generateInterCode(InterCodeEnum kind, int argNum, ...)
 	va_end(ap);
 }
 
+/// @brief 由于没有全局变量的使用，直接解析函数定义
+/// @param node 
 void translateExtDefList(Node *node)
 {
 	// ExtDefList -> ExtDef ExtDefList
@@ -708,6 +641,8 @@ void translateExtDefList(Node *node)
 	}
 }
 
+/// @brief 在产生式ExtDef -> Specifier FunDec CompSt中，解析函数定义
+/// @param node 
 void translateExtDef(Node *node)
 {
 	// ExtDef -> Specifier ExtDecList SEMI
@@ -722,6 +657,7 @@ void translateExtDef(Node *node)
 	Node *funDec = specifier->sibling;
 	Node *compSt = funDec->sibling;
 
+	// 对应进入解析函数
 	if (!strcmp(funDec->name, "FunDec"))
 	{
 		translateFunDec(funDec);
@@ -729,6 +665,8 @@ void translateExtDef(Node *node)
 	}
 }
 
+/// @brief 解析函数定义
+/// @param node 
 void translateFunDec(Node *node)
 {
 	// FunDec -> ID LP VarList RP
@@ -737,21 +675,32 @@ void translateFunDec(Node *node)
 	{
 		return;
 	}
+
+	// 首先生成函数定义
 	generateInterCode(IR_FUNCTION, 1, newOperand(OP_FUNCTION, newString(node->child->value)));
+
+	// 如果有参数
 	if (node->child->sibling->sibling != NULL)
 	{
 		// 有参数
+		// 没必要单独翻译
 		// translateVarList(node->child->sibling->sibling);
+
+		// 已经存在符号表中
 		ItemPtr item = searchTableItem(table, node->child->value);
 		FieldListPtr field = item->field->type->u.function.argv;
+		// 生成参数中间代码
+		// 注意顺序问题，PARAM是从左到右，ARG是从右到左
 		while (field != NULL)
 		{
+			// 生成参数中间代码
 			generateInterCode(IR_PARAM, 1, newOperand(OP_VARIABLE, newString(field->name)));
 			field = field->tail;
 		}
 	}
 }
-
+/// @brief 翻译CompSt，注意代码块中可能没有定义，即DefList为空
+/// @param node 
 void translateCompSt(Node *node)
 {
 	// CompSt -> LC DefList StmtList RC
@@ -760,10 +709,14 @@ void translateCompSt(Node *node)
 	{
 		return;
 	}
+	// 检查第二个孩子是否是DefList
 	Node *secondChild = node->child->sibling;
+
+
 
 	if (!strcmp(secondChild->name, "DefList"))
 	{
+		// 有定义
 		translateDefList(secondChild);
 		translateStmtList(secondChild->sibling);
 	}
@@ -773,6 +726,9 @@ void translateCompSt(Node *node)
 	}
 }
 
+/// @brief 翻译参数列表
+/// @param node 
+/// @param argList 
 void translateArgs(Node *node, ArgList *argList)
 {
 	// Args -> Exp COMMA Args
@@ -787,6 +743,9 @@ void translateArgs(Node *node, ArgList *argList)
 	}
 }
 
+
+/// @brief 翻译定义列表
+/// @param node 
 void translateDefList(Node *node)
 {
 	// DefList -> Def DefList
@@ -805,6 +764,8 @@ void translateDefList(Node *node)
 	}
 }
 
+/// @brief 翻译定义
+/// @param node
 void translateDef(Node *node)
 {
 	// Def -> Specifier DecList SEMI
@@ -820,6 +781,8 @@ void translateDef(Node *node)
 	}
 }
 
+/// @brief 翻译声明列表
+/// @param node 
 void translateDecList(Node *node)
 {
 	// DecList -> Dec
@@ -845,6 +808,9 @@ void translateDecList(Node *node)
 	}
 }
 
+
+/// @brief 翻译声明，注意可能存在初始化赋值
+/// @param node 
 void translateDec(Node *node)
 {
 	// Dec -> VarDec
@@ -854,6 +820,8 @@ void translateDec(Node *node)
 		return;
 	}
 	Node *varDec = node->child;
+
+	// 如果有赋值
 	if (varDec->sibling != NULL)
 	{
 		Node *exp = varDec->sibling->sibling;
@@ -862,6 +830,7 @@ void translateDec(Node *node)
 		translateVarDec(varDec, varTemp);
 		Operand *expTemp = newTempVar();
 		translateExp(exp, expTemp);
+		// 生成赋值中间代码
 		generateInterCode(IR_ASSIGN, 2, varTemp, expTemp);
 	}
 	else
@@ -870,8 +839,10 @@ void translateDec(Node *node)
 		translateVarDec(varDec, NULL);
 	}
 }
-// 变量定义
-// 如果var不为NULL，那么生成赋值中间代码
+
+/// @brief 变量定义 如果var不为NULL，那么生成赋值中间代码
+/// @param node
+/// @param var 传入的一个操作数，用于获取本次变量定义
 void translateVarDec(Node *node, Operand *var)
 {
 	// VarDec -> ID
@@ -882,18 +853,28 @@ void translateVarDec(Node *node, Operand *var)
 	}
 
 	NodePtr idNode = node->child;
+
+	// 可能是个普通变量，也可能是个数组名
+	// 在这里不能区分，需要借助符号表
 	if (!strcmp(idNode->name, "ID"))
 	{
 		ItemPtr idItem = searchTableItem(table, idNode->value);
 		TypePtr idType = idItem->field->type;
+
+		// 对于普通变量，直接生成中间代码
 		if (idType->kind == BASIC)
 		{
 			if (var != NULL)
 			{
+				// 由于上层传来的是一个临时变量
+				// 而此处的变量有自己的名字
+				// 所以此处不需要生成临时变量
 				interCodeList->tempVarNum--; // 临时变量编号减一，因为不需要生成临时变量
-				setOperand(var, OP_VARIABLE, 1,newString(idNode->value));
+				// 修改操作数的名字
+				setOperand(var, OP_VARIABLE, 1, newString(idNode->value));
 			}
 		}
+		// 对于数组，需要生成DEC中间代码
 		else if (idType->kind == ARRAY)
 		{
 			// 数组类型
@@ -907,6 +888,8 @@ void translateVarDec(Node *node, Operand *var)
 	}
 }
 
+/// @brief 翻译语句序列
+/// @param node 
 void translateStmtList(Node *node)
 {
 	// StmtList -> Stmt StmtList
@@ -925,6 +908,8 @@ void translateStmtList(Node *node)
 	}
 }
 
+/// @brief 翻译语句
+/// @param node 
 void translateStmt(Node *node)
 {
 	// Stmt -> Exp SEMI
@@ -962,17 +947,33 @@ void translateStmt(Node *node)
 		NodePtr stmtNode = expNode->sibling->sibling;
 		Operand *label1 = newLabel();
 		Operand *label2 = newLabel();
+		// 生成条件中间代码
 		translateCond(expNode, label1, label2);
+
+		// 生成标签1
 		generateInterCode(IR_LABEL, 1, label1);
+
+		// 标签1对应的语句
 		translateStmt(stmtNode);
 
+		// 标签2对应的语句
 		if (stmtNode->sibling == NULL)
 		{
 			generateInterCode(IR_LABEL, 1, label2);
 		}
 		else
 		{
+			// 如果有else
 			Operand *label3 = newLabel();
+			// 这样翻译是因为
+			// 在前面不跳转到else对应的语句
+			// 就要前往下一个代码块
+			// 所以形如
+			// goto label3
+			// label2:
+			// stmt
+			// label3: 
+			// 离开代码块
 			generateInterCode(IR_GOTO, 1, label3);
 			generateInterCode(IR_LABEL, 1, label2);
 			translateStmt(stmtNode->sibling->sibling);
@@ -982,20 +983,22 @@ void translateStmt(Node *node)
 	else if (!strcmp(child->name, "WHILE"))
 	{
 		// WHILE LP Exp RP Stmt
-		Operand *label1 = newLabel();
-		Operand *label2 = newLabel();
-		Operand *label3 = newLabel();
+		Operand *label1 = newLabel(); // 循环开始
+		Operand *label2 = newLabel(); // 循环体
+		Operand *label3 = newLabel(); // 循环结束	
 		NodePtr expNode = child->sibling->sibling;
 		NodePtr stmtNode = expNode->sibling->sibling;
-		generateInterCode(IR_LABEL, 1, label1);
-		translateCond(expNode, label2, label3);
-		generateInterCode(IR_LABEL, 1, label2);
-		translateStmt(stmtNode);
-		generateInterCode(IR_GOTO, 1, label1);
-		generateInterCode(IR_LABEL, 1, label3);
+		generateInterCode(IR_LABEL, 1, label1); //循环开始标志
+		translateCond(expNode, label2, label3); // 注意传入的是label2和label3，检查exp是否为真，并跳转到label2或label3
+		generateInterCode(IR_LABEL, 1, label2); //循环体标志
+		translateStmt(stmtNode); // 翻译循环体
+		generateInterCode(IR_GOTO, 1, label1); //跳转到循环开始
+		generateInterCode(IR_LABEL, 1, label3); //循环结束标志
 	}
 }
-
+/// @brief 翻译表达式
+/// @param node 
+/// @param var 上层传入一个操作数，用于获取本次表达式的值
 void translateExp(Node *node, Operand *var)
 {
 	// Exp -> Exp ASSIGN Exp
@@ -1041,6 +1044,7 @@ void translateExp(Node *node, Operand *var)
 		// Exp -> Exp DOT ID
 
 		// 参照指导书AND OR RELOP和NOT采取相同的翻译方式
+		// 根据条件跳转决定var的值
 		if (!strcmp(node->child->sibling->name, "AND") || !strcmp(node->child->sibling->name, "OR") ||
 			!strcmp(node->child->sibling->name, "RELOP"))
 		{
@@ -1049,9 +1053,9 @@ void translateExp(Node *node, Operand *var)
 			Operand *true_num = newOperand(OP_CONSTANT, 1);
 			Operand *false_num = newOperand(OP_CONSTANT, 0);
 			generateInterCode(IR_ASSIGN, 2, var, false_num);
-			translateCond(node, label1, label2);
-			generateInterCode(IR_LABEL, 1, label1);
-			generateInterCode(IR_ASSIGN, 2, var, true_num);
+			translateCond(node, label1, label2); // 翻译条件，如果条件为真，跳转到label1，否则跳转到label2
+			generateInterCode(IR_LABEL, 1, label1); // 标签1
+			generateInterCode(IR_ASSIGN, 2, var, true_num); // 赋值为真
 		}
 		// Exp -> Exp PLUS Exp
 		// Exp -> Exp ASSIGNOP Exp
@@ -1134,6 +1138,7 @@ void translateExp(Node *node, Operand *var)
 	}
 	else if (!strcmp(child->name, "LP"))
 	{
+		// LP Exp RP
 		translateExp(child->sibling, var);
 	}
 	else if (!strcmp(child->name, "MINUS"))
@@ -1170,11 +1175,24 @@ void translateExp(Node *node, Operand *var)
 				else
 				{
 					// 生成ARG中间代码
-					Argument *arg = argList->head;
-					while (arg != NULL)
+					Argument *headArg = argList->head;
+					Argument *lastArg = argList->cur;
+					Argument *tempArg = headArg;
+					// 倒序生成ARG中间代码
+					while (tempArg != NULL)
 					{
-						generateInterCode(IR_ARG, 1, arg->op);
-						arg = arg->next;
+						if (headArg == lastArg) {
+							generateInterCode(IR_ARG, 1, tempArg->op);
+							break;
+						}
+						if (tempArg->next==lastArg){
+							generateInterCode(IR_ARG, 1, lastArg->op);
+							lastArg = tempArg;
+							tempArg = headArg;
+						}
+						else {
+							tempArg = tempArg->next;
+						}
 					}
 					// 生成CALL中间代码
 					if (var != NULL)
@@ -1218,14 +1236,14 @@ void translateExp(Node *node, Operand *var)
 				return;
 			}
 			interCodeList->tempVarNum--; // 临时变量编号减一，因为不需要生成临时变量
-			setOperand(var, OP_VARIABLE, 1,newString(child->value));
+			setOperand(var, OP_VARIABLE, 1, newString(child->value));
 		}
 	}
 	else if (!strcmp(child->name, "INT"))
 	{
 		// INT
 		interCodeList->tempVarNum--; // 临时变量编号减一，因为不需要生成临时变量
-		setOperand(var, OP_CONSTANT, 1,atoi(child->value));
+		setOperand(var, OP_CONSTANT, 1, atoi(child->value));
 	}
 	else if (!strcmp(child->name, "FLOAT"))
 	{
@@ -1235,6 +1253,10 @@ void translateExp(Node *node, Operand *var)
 	}
 }
 
+/// @brief 翻译条件表达式，若为真跳转到labelTrue，否则跳转到labelFalse
+/// @param node 
+/// @param labelTrue 
+/// @param labelFalse 
 void translateCond(Node *node, Operand *labelTrue, Operand *labelFalse)
 {
 	// Exp -> Exp RELOP Exp
@@ -1250,6 +1272,7 @@ void translateCond(Node *node, Operand *labelTrue, Operand *labelFalse)
 	if (!strcmp(child->name, "NOT"))
 	{
 		// 倒置labelTrue和labelFalse
+		// 重新传入表达式
 		translateCond(child->sibling, labelFalse, labelTrue);
 	}
 	else if (!strcmp(sibling->name, "RELOP"))
@@ -1273,24 +1296,25 @@ void translateCond(Node *node, Operand *labelTrue, Operand *labelFalse)
 			generateInterCode(IR_READ_ADDR, 2, temp, t2);
 			t2 = temp;
 		}
+		// 在relop处理中，如果条件为真，跳转到labelTrue，否则跳转到labelFalse
 		generateInterCode(IR_IF_GOTO, 4, t1, relop, t2, labelTrue);
 		generateInterCode(IR_GOTO, 1, labelFalse);
 	}
 	else if (!strcmp(sibling->name, "AND"))
 	{
 		Operand *label1 = newLabel();
-		translateCond(child, label1, labelFalse);
-		generateInterCode(IR_LABEL, 1, label1);
-		translateCond(child->sibling->sibling, labelTrue, labelFalse);
+		translateCond(child, label1, labelFalse); // 如果第一个条件为真，跳转到label1，再判断第二个条件
+		generateInterCode(IR_LABEL, 1, label1); // 标签1
+		translateCond(child->sibling->sibling, labelTrue, labelFalse); // 如果第二个条件为真，跳转到labelTrue，否则跳转到labelFalse
 	}
 	else if (!strcmp(sibling->name, "OR"))
 	{
 		Operand *label1 = newLabel();
-		translateCond(child, labelTrue, label1);
-		generateInterCode(IR_LABEL, 1, label1);
-		translateCond(child->sibling->sibling, labelTrue, labelFalse);
+		translateCond(child, labelTrue, label1); // 如果第一个条件为真，跳转到labelTrue，若为假，才跳转到标签判断第二个条件
+		generateInterCode(IR_LABEL, 1, label1); // 标签1
+		translateCond(child->sibling->sibling, labelTrue, labelFalse); // 如果第二个条件为真，跳转到labelTrue，否则跳转到labelFalse
 	}
-	else
+	else // 无条件跳转
 	{
 		Operand *t1 = newTempVar();
 		translateExp(node, t1);

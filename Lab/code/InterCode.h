@@ -61,10 +61,10 @@ typedef struct InterCodeSS_
 
 typedef struct InterCodeList_
 {
-	InterCodeSS *head;
-	InterCodeSS *cur;
-	int tempVarNum;
-	int labelNum;
+	InterCodeSS *head; // 头节点，打印时从头节点开始打印
+	InterCodeSS *cur; // 当前节点，用于添加新节点
+	int tempVarNum; // 临时变量计数
+	int labelNum; // 标签计数
 } InterCodeList;
 
 typedef struct Argument
@@ -107,6 +107,9 @@ extern InterCodeList *interCodeList;
 #define IS_DEC_INTERCODE(kind) \
 	(kind == IR_DEC)
 
+// 生成操作数
+// @param kind: 中间代码类型
+// @param ...: 中间代码参数
 Operand *newOperand(OperandEnum kind, ...);
 void freeOperand(Operand *op);
 void setOperand(Operand *op, OperandEnum kind, int argNnum,...);

@@ -1,7 +1,16 @@
+int fact(int n, int m)
+{
+	write(n);
+	write(m);
+	return 0;
+}
 int main()
 {
-	int a = 1;
-    int n[5];
-	n[1] = 123;
-	write(n[1]);
+    int a;
+	int b;
+    a = read();
+	b = read();
+	fact(a,b);
+
+    return 0;
 }
