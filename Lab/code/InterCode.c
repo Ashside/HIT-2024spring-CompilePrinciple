@@ -5,7 +5,6 @@
 
 InterCodeList *interCodeList;
 
-
 Operand *newOperand(OperandEnum kind, ...)
 {
 	// 如果是OP_CONSTANT，那么value是int类型
@@ -58,7 +57,7 @@ void setOperand(Operand *op, OperandEnum kind, void *value)
 	switch (kind)
 	{
 	case OP_CONSTANT:
-		op->u.value = (int )value;
+		op->u.value = (int)value;
 #ifdef DEBUG_INTER_CODE_GENERATION
 		printf("setOperand: %d\n", op->u.value);
 #endif
@@ -203,7 +202,7 @@ void freeInterCodeSS(InterCodeSS *codeSS)
 
 void printInterCodeSS(FILE *file, InterCodeSS *codeSS)
 {
-	if (codeSS == NULL)
+	if (file == NULL)
 	{
 		switch (codeSS->code.kind)
 		{
@@ -481,7 +480,7 @@ void printInterCodeList(FILE *file, InterCodeList *list)
 	{
 		while (p != NULL)
 		{
-			printInterCodeSS(file, p);
+			printInterCodeSS(NULL, p);
 			p = p->next;
 		}
 	}
@@ -767,26 +766,28 @@ void translateFunDec(Node *node)
 void translateCompSt(Node *node)
 {
 	// CompSt -> LC DefList StmtList RC
+	// DefList -> e
 	if (node == NULL)
 	{
 		return;
 	}
-	Node *defList = node->child->sibling;
-	Node *stmtList = defList->sibling;
-	if (!strcmp(defList->name, "DefList"))
+	Node* secondChild = node->child->sibling;
+
+	if (!strcmp(secondChild->name, "DefList"))
 	{
-		translateDefList(defList);
+		translateDefList(secondChild);
+		translateStmtList(secondChild->sibling);
 	}
-	if (!strcmp(stmtList->name, "StmtList"))
+	else if (!strcmp(secondChild->name, "StmtList"))
 	{
-		translateStmtList(stmtList);
+		translateStmtList(secondChild);
 	}
 }
 
 void translateArgs(Node *node, ArgList *argList)
 {
-	//Args -> Exp COMMA Args
-	//Args -> Exp
+	// Args -> Exp COMMA Args
+	// Args -> Exp
 	Argument *arg = newArgument(newTempVar());
 	translateExp(node->child, arg->op);
 
@@ -795,7 +796,6 @@ void translateArgs(Node *node, ArgList *argList)
 	{
 		translateArgs(node->child->sibling->sibling, argList);
 	}
-
 }
 
 void translateDefList(Node *node)
@@ -1025,12 +1025,8 @@ void translateExp(Node *node, Operand *var)
 
 	// Exp -> LP Exp RP
 
-
-
 	// Exp -> ID LP Args RP
 	// Exp -> ID LP RP
-
-
 
 	// Exp -> ID
 	// Exp -> INT
@@ -1136,14 +1132,14 @@ void translateExp(Node *node, Operand *var)
 	else if (!strcmp(child->name, "NOT"))
 	{
 		// NOT Exp
-		Operand* label1 = newLabel();
-		Operand* label2 = newLabel();
-		Operand* true_num = newOperand(OP_CONSTANT, 1);
-		Operand* false_num = newOperand(OP_CONSTANT, 0);
-		generateInterCode(IR_ASSIGN,2 ,var, false_num);
+		Operand *label1 = newLabel();
+		Operand *label2 = newLabel();
+		Operand *true_num = newOperand(OP_CONSTANT, 1);
+		Operand *false_num = newOperand(OP_CONSTANT, 0);
+		generateInterCode(IR_ASSIGN, 2, var, false_num);
 		translateCond(node, label1, label2);
-		generateInterCode(IR_LABEL,1 ,label1);
-		generateInterCode(IR_ASSIGN, 2,var, true_num);
+		generateInterCode(IR_LABEL, 1, label1);
+		generateInterCode(IR_ASSIGN, 2, var, true_num);
 	}
 	else if (!strcmp(child->name, "LP"))
 	{
@@ -1169,36 +1165,37 @@ void translateExp(Node *node, Operand *var)
 		{
 			// Exp -> ID LP Args RP
 			// Exp -> ID LP RP
-			
-			Operand* func = newOperand(OP_FUNCTION, newString(child->value));
-			
+
+			Operand *func = newOperand(OP_FUNCTION, newString(child->value));
+
 			if (!strcmp(child->sibling->sibling->name, "Args"))
 			{
-				ArgList* argList = newArgList();
+				ArgList *argList = newArgList();
 				translateArgs(child->sibling->sibling, argList);
-				if (!strcmp(child->name,"write")){
+				if (!strcmp(child->value, "write"))
+				{
 					generateInterCode(IR_WRITE, 1, argList->head->op);
 				}
-				else {
+				else
+				{
 					// 生成ARG中间代码
-					Argument* arg = argList->head;
+					Argument *arg = argList->head;
 					while (arg != NULL)
 					{
 						generateInterCode(IR_ARG, 1, arg->op);
 						arg = arg->next;
 					}
+					// 生成CALL中间代码
+					if (var != NULL)
+					{
+						generateInterCode(IR_CALL, 2, var, func);
+					}
+					else
+					{
+						Operand *temp = newTempVar();
+						generateInterCode(IR_CALL, 2, temp, func);
+					}
 				}
-				// 生成CALL中间代码
-				if (var != NULL)
-				{
-					generateInterCode(IR_CALL, 2, var, func);
-				}
-				else
-				{
-					Operand* temp = newTempVar();
-					generateInterCode(IR_CALL, 2, temp, func);
-				}
-
 			}
 			else if (!strcmp(child->sibling->sibling->name, "RP"))
 			{
@@ -1207,22 +1204,23 @@ void translateExp(Node *node, Operand *var)
 				{
 					generateInterCode(IR_READ, 1, var);
 				}
-				else {
+				else
+				{
 					if (var != NULL)
 					{
 						generateInterCode(IR_CALL, 2, var, func);
 					}
 					else
 					{
-						Operand* temp = newTempVar();
+						Operand *temp = newTempVar();
 						generateInterCode(IR_CALL, 2, temp, func);
 					}
 				}
 			}
-
 		}
 		// Exp -> ID
-		else {
+		else
+		{
 			ItemPtr item = searchTableItem(table, child->value);
 			if (item == NULL)
 			{
@@ -1231,7 +1229,6 @@ void translateExp(Node *node, Operand *var)
 			interCodeList->tempVarNum--; // 临时变量编号减一，因为不需要生成临时变量
 			setOperand(var, OP_VARIABLE, (void *)newString(child->value));
 		}
-		
 	}
 	else if (!strcmp(child->name, "INT"))
 	{
@@ -1254,63 +1251,69 @@ void translateCond(Node *node, Operand *labelTrue, Operand *labelFalse)
 	// Exp -> Exp AND Exp
 	// Exp -> Exp OR Exp
 
-	//仅在以上四种布尔表达式中使用
+	// 仅在以上四种布尔表达式中使用
 
 	NodePtr child = node->child;
 	NodePtr sibling = child->sibling;
 
-	if (!strcmp(child->name,"NOT")){
+	if (!strcmp(child->name, "NOT"))
+	{
 		// 倒置labelTrue和labelFalse
 		translateCond(child->sibling, labelFalse, labelTrue);
 	}
-	else if (!strcmp(sibling->name,"RELOP")){
-		Operand* t1 = newTempVar();
-		Operand* t2 = newTempVar();
+	else if (!strcmp(sibling->name, "RELOP"))
+	{
+		Operand *t1 = newTempVar();
+		Operand *t2 = newTempVar();
 		translateExp(child, t1);
 		translateExp(child->sibling->sibling, t2);
-		Operand* relop = newOperand(OP_RELOP, newString(sibling->value));
-		
-		//如果t1和t2是地址，那么需要先读取地址
-		if (t1->kind == OP_ADDRESS){
-			Operand* temp = newTempVar();
+		Operand *relop = newOperand(OP_RELOP, newString(sibling->value));
+
+		// 如果t1和t2是地址，那么需要先读取地址
+		if (t1->kind == OP_ADDRESS)
+		{
+			Operand *temp = newTempVar();
 			generateInterCode(IR_READ_ADDR, 2, temp, t1);
 			t1 = temp;
 		}
-		if (t2->kind == OP_ADDRESS){
-			Operand* temp = newTempVar();
+		if (t2->kind == OP_ADDRESS)
+		{
+			Operand *temp = newTempVar();
 			generateInterCode(IR_READ_ADDR, 2, temp, t2);
 			t2 = temp;
 		}
 		generateInterCode(IR_IF_GOTO, 4, t1, relop, t2, labelTrue);
 		generateInterCode(IR_GOTO, 1, labelFalse);
 	}
-	else if (!strcmp(sibling->name,"AND")){
-		Operand* label1 = newLabel();
+	else if (!strcmp(sibling->name, "AND"))
+	{
+		Operand *label1 = newLabel();
 		translateCond(child, label1, labelFalse);
 		generateInterCode(IR_LABEL, 1, label1);
 		translateCond(child->sibling->sibling, labelTrue, labelFalse);
 	}
-	else if (!strcmp(sibling->name,"OR")){
-		Operand* label1 = newLabel();
+	else if (!strcmp(sibling->name, "OR"))
+	{
+		Operand *label1 = newLabel();
 		translateCond(child, labelTrue, label1);
 		generateInterCode(IR_LABEL, 1, label1);
 		translateCond(child->sibling->sibling, labelTrue, labelFalse);
 	}
-	else {
-		Operand* t1 = newTempVar();
+	else
+	{
+		Operand *t1 = newTempVar();
 		translateExp(node, t1);
-		Operand* zero = newOperand(OP_CONSTANT, 0);
-		Operand* neq = newOperand(OP_RELOP, newString("!="));
+		Operand *zero = newOperand(OP_CONSTANT, 0);
+		Operand *neq = newOperand(OP_RELOP, newString("!="));
 
-		//如果t1是地址，那么需要先读取地址
-		if (t1->kind == OP_ADDRESS){
-			Operand* temp = newTempVar();
+		// 如果t1是地址，那么需要先读取地址
+		if (t1->kind == OP_ADDRESS)
+		{
+			Operand *temp = newTempVar();
 			generateInterCode(IR_READ_ADDR, 2, temp, t1);
 			t1 = temp;
 		}
 		generateInterCode(IR_IF_GOTO, 4, t1, neq, zero, labelTrue);
 		generateInterCode(IR_GOTO, 1, labelFalse);
-
 	}
-
 }

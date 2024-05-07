@@ -27,11 +27,15 @@ int main(int argc, char **argv)
         return 1;
     }
 #ifdef LAB3_ACTIVE
-    FILE *File2Write = fopen(argv[2], "wt+");
-    if (!File2Write)
+    FILE *File2Write = stdout;
+    if (argc > 2)
     {
-        perror(argv[2]);
-        return 1;
+        FILE *File2Write = fopen(argv[2], "wt+");
+        if (!File2Write)
+        {
+            perror(argv[2]);
+            return 1;
+        }
     }
 #endif
 
@@ -60,7 +64,7 @@ int main(int argc, char **argv)
         generateInterCodeSS(RootNode);
 #ifdef DEBUG_INTER_CODE_GENERATION
         printf("Intermediate code generated:\n");
-        printInterCodeList(stdout, interCodeList);
+        printInterCodeList(File2Write, interCodeList);
 #endif
         // printInterCodeList(File2Write, interCodeList);
 

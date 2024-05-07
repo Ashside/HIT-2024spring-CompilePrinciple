@@ -416,7 +416,7 @@ void clearCurDepthStackList(TablePtr table)
     ItemPtr temp = getCurDepthStackHead(stack);
     while (temp)
     {
-        ItemPtr tDelete = temp;
+        //ItemPtr tDelete = temp;
         temp = temp->nextSymbol;
         //deleteTableItem(table, tDelete);
     }
