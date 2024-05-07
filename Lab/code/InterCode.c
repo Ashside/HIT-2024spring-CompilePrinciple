@@ -48,16 +48,19 @@ void freeOperand(Operand *op)
 	free(op);
 }
 
-void setOperand(Operand *op, OperandEnum kind, void *value)
+void setOperand(Operand *op, OperandEnum kind, int argNum,...)
 {
 #ifdef DEBUG_INTER_CODE_GENERATION
 	printf("setOperand: %d\n", kind);
 #endif
+	va_list ap;
 	op->kind = kind;
 	switch (kind)
 	{
 	case OP_CONSTANT:
-		op->u.value = (int)value;
+		va_start(ap, argNum);
+		op->u.value = va_arg(ap, int);
+		va_end(ap);
 #ifdef DEBUG_INTER_CODE_GENERATION
 		printf("setOperand: %d\n", op->u.value);
 #endif
@@ -67,7 +70,9 @@ void setOperand(Operand *op, OperandEnum kind, void *value)
 	case OP_LABEL:
 	case OP_FUNCTION:
 	case OP_RELOP:
-		op->u.name = (char *)value;
+		va_start(ap, argNum);
+		op->u.name = va_arg(ap, char *);
+		va_end(ap);
 #ifdef DEBUG_INTER_CODE_GENERATION
 		printf("setOperand: %s\n", op->u.name);
 #endif
@@ -120,7 +125,7 @@ void printOperand(FILE *file, Operand *op)
 	}
 }
 
-InterCode *newInterCode(InterCodeEnum kind, int argNum,...)
+InterCode *newInterCode(InterCodeEnum kind, int argNum, ...)
 {
 	InterCode *code = (InterCode *)malloc(sizeof(InterCode));
 	code->kind = kind;
@@ -161,7 +166,7 @@ InterCode *newInterCode(InterCodeEnum kind, int argNum,...)
 	{
 		va_start(ap, argNum);
 	}
-	
+
 	va_end(ap);
 	return code;
 }
@@ -470,13 +475,12 @@ void addInterCodeSS(InterCodeList *list, InterCodeSS *codeSS)
 void printInterCodeList(FILE *file, InterCodeList *list)
 {
 	InterCodeSS *p = list->head;
-	
-		while (p != NULL)
-		{
-			printInterCodeSS(file, p);
-			p = p->next;
-		}
-	
+
+	while (p != NULL)
+	{
+		printInterCodeSS(file, p);
+		p = p->next;
+	}
 }
 
 Argument *newArgument(Operand *op)
@@ -607,7 +611,7 @@ void generateInterCode(InterCodeEnum kind, int argNum, ...)
 			generateInterCode(IR_READ_ADDR, 2, temp, op1);
 			op1 = temp;
 		}
-		codeSS = newInterCodeSS(newInterCode(kind,1 ,op1));
+		codeSS = newInterCodeSS(newInterCode(kind, 1, op1));
 		addInterCodeSS(interCodeList, codeSS);
 	}
 	else if (IS_DOUBLE_OP_INTERCODE(kind))
@@ -640,7 +644,7 @@ void generateInterCode(InterCodeEnum kind, int argNum, ...)
 		// 不是赋值操作，直接生成中间代码
 		else
 		{
-			codeSS = newInterCodeSS(newInterCode(kind, 2,op1, op2));
+			codeSS = newInterCodeSS(newInterCode(kind, 2, op1, op2));
 			addInterCodeSS(interCodeList, codeSS);
 		}
 	}
@@ -662,7 +666,7 @@ void generateInterCode(InterCodeEnum kind, int argNum, ...)
 			generateInterCode(IR_READ_ADDR, 2, temp, op2);
 			op2 = temp;
 		}
-		codeSS = newInterCodeSS(newInterCode(kind, 3,result, op1, op2));
+		codeSS = newInterCodeSS(newInterCode(kind, 3, result, op1, op2));
 		addInterCodeSS(interCodeList, codeSS);
 	}
 	else if (IS_DEC_INTERCODE(kind))
@@ -670,7 +674,7 @@ void generateInterCode(InterCodeEnum kind, int argNum, ...)
 		va_start(ap, argNum);
 		op1 = va_arg(ap, Operand *);
 		size = va_arg(ap, int);
-		codeSS = newInterCodeSS(newInterCode(kind, 2,op1, size));
+		codeSS = newInterCodeSS(newInterCode(kind, 2, op1, size));
 		addInterCodeSS(interCodeList, codeSS);
 	}
 	else if (IS_COND_JUMP_INTERCODE(kind))
@@ -680,7 +684,7 @@ void generateInterCode(InterCodeEnum kind, int argNum, ...)
 		relop = va_arg(ap, Operand *);
 		op1 = va_arg(ap, Operand *);
 		op2 = va_arg(ap, Operand *);
-		codeSS = newInterCodeSS(newInterCode(kind, 4,result, relop, op1, op2));
+		codeSS = newInterCodeSS(newInterCode(kind, 4, result, relop, op1, op2));
 		addInterCodeSS(interCodeList, codeSS);
 	}
 	else
@@ -756,7 +760,7 @@ void translateCompSt(Node *node)
 	{
 		return;
 	}
-	Node* secondChild = node->child->sibling;
+	Node *secondChild = node->child->sibling;
 
 	if (!strcmp(secondChild->name, "DefList"))
 	{
@@ -887,7 +891,7 @@ void translateVarDec(Node *node, Operand *var)
 			if (var != NULL)
 			{
 				interCodeList->tempVarNum--; // 临时变量编号减一，因为不需要生成临时变量
-				setOperand(var, OP_VARIABLE, (void *)newString(idNode->value));
+				setOperand(var, OP_VARIABLE, 1,newString(idNode->value));
 			}
 		}
 		else if (idType->kind == ARRAY)
@@ -1114,8 +1118,6 @@ void translateExp(Node *node, Operand *var)
 			// 将数组元素地址返回给var
 			generateInterCode(IR_ASSIGN, 2, var, t5);
 			var->kind = OP_ADDRESS;
-
-
 		}
 	}
 	else if (!strcmp(child->name, "NOT"))
@@ -1216,14 +1218,14 @@ void translateExp(Node *node, Operand *var)
 				return;
 			}
 			interCodeList->tempVarNum--; // 临时变量编号减一，因为不需要生成临时变量
-			setOperand(var, OP_VARIABLE, (void *)newString(child->value));
+			setOperand(var, OP_VARIABLE, 1,newString(child->value));
 		}
 	}
 	else if (!strcmp(child->name, "INT"))
 	{
 		// INT
 		interCodeList->tempVarNum--; // 临时变量编号减一，因为不需要生成临时变量
-		setOperand(var, OP_CONSTANT, (void *)atoi(child->value));
+		setOperand(var, OP_CONSTANT, 1,atoi(child->value));
 	}
 	else if (!strcmp(child->name, "FLOAT"))
 	{

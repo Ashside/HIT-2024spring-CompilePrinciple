@@ -109,7 +109,7 @@ extern InterCodeList *interCodeList;
 
 Operand *newOperand(OperandEnum kind, ...);
 void freeOperand(Operand *op);
-void setOperand(Operand *op, OperandEnum kind, void *value);
+void setOperand(Operand *op, OperandEnum kind, int argNnum,...);
 void printOperand(FILE *file, Operand *op);
 
 InterCode *newInterCode(InterCodeEnum kind, int argNum,...);
