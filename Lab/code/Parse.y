@@ -16,7 +16,7 @@
 
     //int yydebug = 1;
 %}
-%locations
+%locations                      
 %define parse.error verbose
 // yylval union
 %union{

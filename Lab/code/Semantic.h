@@ -78,30 +78,26 @@ void preTree(NodePtr node);
 
 boolean checkType(TypePtr type1, TypePtr type2);
 int sizeOfType(TypePtr type);
-
 void setFieldListName(FieldListPtr p, char* newName);
-
 boolean isStructDef(ItemPtr src);
-
 ItemPtr getHashHead(HashPtr hash, int index);
 void setHashHead(HashPtr hash, int index, ItemPtr newVal);
-
 void addStackDepth(StackPtr stack);
 void minusStackDepth(StackPtr stack);
 ItemPtr getCurDepthStackHead(StackPtr stack);
 void setCurDepthStackHead(StackPtr stack, ItemPtr newVal);
-
 ItemPtr searchTableItem(TablePtr table, char* name);
 int checkTableItemConflict(TablePtr table, ItemPtr item);
 void addTableItem(TablePtr table, ItemPtr item);
 void clearCurDepthStackList(TablePtr table);
+void addWRtoTable(TablePtr table);
 
 TypePtr newType(Kind kind, int argNum,...);
 ItemPtr newItem(int symbolDepth, FieldListPtr pfield);
 FieldListPtr newFieldList(char* newName, TypePtr newType);
 HashPtr newHash();
 StackPtr newStack();
-TablePtr initTable();
+TablePtr newTable();
 
 TypePtr copyType(TypePtr src);
 FieldListPtr copyFieldList(FieldListPtr src);

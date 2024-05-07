@@ -310,13 +310,14 @@ void setHashHead(HashPtr hash, int index, ItemPtr newVal)
 }
 // Table functions
 
-TablePtr initTable()
+TablePtr newTable()
 {
     TablePtr table = (TablePtr)malloc(sizeof(Table));
     assert(table != NULL);
     table->hash = newHash();
     table->stack = newStack();
     table->unNamedStructNum = 0;
+    addWRtoTable(table);
     return table;
 };
 
@@ -417,10 +418,40 @@ void clearCurDepthStackList(TablePtr table)
     {
         ItemPtr tDelete = temp;
         temp = temp->nextSymbol;
-        deleteTableItem(table, tDelete);
+        //deleteTableItem(table, tDelete);
     }
     setCurDepthStackHead(stack, NULL);
     minusStackDepth(stack);
+}
+
+void addWRtoTable(TablePtr table)
+{
+    assert(table != NULL);
+    ItemPtr read = newItem(
+        0,
+        newFieldList(
+            newString("read"),
+            newType(
+                FUNCTION,
+                3,
+                0,
+                NULL,
+                newType(BASIC, 1,INT_TYPE))));
+
+    ItemPtr write = newItem(
+        0,
+        newFieldList(
+            newString("write"),
+            newType(
+                FUNCTION,
+                3,
+                1,
+                newFieldList(
+                    "arg",
+                    newType(BASIC, 1,INT_TYPE)),
+                newType(BASIC, 1,INT_TYPE))));
+    addTableItem(table, read);
+    addTableItem(table, write);
 }
 
 // Stack functions
