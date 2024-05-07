@@ -120,54 +120,48 @@ void printOperand(FILE *file, Operand *op)
 	}
 }
 
-InterCode *newInterCode(InterCodeEnum kind, ...)
+InterCode *newInterCode(InterCodeEnum kind, int argNum,...)
 {
 	InterCode *code = (InterCode *)malloc(sizeof(InterCode));
 	code->kind = kind;
 	va_list ap;
-	switch (kind)
+	if (IS_SINGLE_OP_INTERCODE(kind))
 	{
-	case IR_LABEL:
-	case IR_FUNCTION:
-	case IR_GOTO:
-	case IR_RETURN:
-	case IR_ARG:
-	case IR_PARAM:
-	case IR_READ:
-	case IR_WRITE:
-		va_start(ap, 1);
+		va_start(ap, argNum);
 		code->u.singleOp.op = va_arg(ap, Operand *);
-		break;
-	case IR_ASSIGN:
-	case IR_GET_ADDR:
-	case IR_READ_ADDR:
-	case IR_WRITE_ADDR:
-	case IR_CALL:
-		va_start(ap, 2);
+	}
+	else if (IS_DOUBLE_OP_INTERCODE(kind))
+	{
+		va_start(ap, argNum);
 		code->u.assign.left = va_arg(ap, Operand *);
 		code->u.assign.right = va_arg(ap, Operand *);
-		break;
-	case IR_ADD:
-	case IR_SUB:
-	case IR_MUL:
-	case IR_DIV:
-		va_start(ap, 3);
+	}
+	else if (IS_THREE_OP_INTERCODE(kind))
+	{
+		va_start(ap, argNum);
 		code->u.doubleOp.result = va_arg(ap, Operand *);
 		code->u.doubleOp.op1 = va_arg(ap, Operand *);
 		code->u.doubleOp.op2 = va_arg(ap, Operand *);
-		break;
-	case IR_DEC:
-		va_start(ap, 2);
+	}
+	else if (IS_DEC_INTERCODE(kind))
+	{
+		va_start(ap, argNum);
 		code->u.decSize.op = va_arg(ap, Operand *);
 		code->u.decSize.size = va_arg(ap, int);
-		break;
-	case IR_IF_GOTO:
-		va_start(ap, 4);
+	}
+	else if (IS_COND_JUMP_INTERCODE(kind))
+	{
+		va_start(ap, argNum);
 		code->u.condJmp.x = va_arg(ap, Operand *);
 		code->u.condJmp.relop = va_arg(ap, Operand *);
 		code->u.condJmp.y = va_arg(ap, Operand *);
 		code->u.condJmp.z = va_arg(ap, Operand *);
 	}
+	else
+	{
+		va_start(ap, argNum);
+	}
+	
 	va_end(ap);
 	return code;
 }
@@ -476,22 +470,13 @@ void addInterCodeSS(InterCodeList *list, InterCodeSS *codeSS)
 void printInterCodeList(FILE *file, InterCodeList *list)
 {
 	InterCodeSS *p = list->head;
-	if (file == NULL)
-	{
-		while (p != NULL)
-		{
-			printInterCodeSS(NULL, p);
-			p = p->next;
-		}
-	}
-	else
-	{
+	
 		while (p != NULL)
 		{
 			printInterCodeSS(file, p);
 			p = p->next;
 		}
-	}
+	
 }
 
 Argument *newArgument(Operand *op)
@@ -622,7 +607,7 @@ void generateInterCode(InterCodeEnum kind, int argNum, ...)
 			generateInterCode(IR_READ_ADDR, 2, temp, op1);
 			op1 = temp;
 		}
-		codeSS = newInterCodeSS(newInterCode(kind, op1));
+		codeSS = newInterCodeSS(newInterCode(kind,1 ,op1));
 		addInterCodeSS(interCodeList, codeSS);
 	}
 	else if (IS_DOUBLE_OP_INTERCODE(kind))
@@ -655,7 +640,7 @@ void generateInterCode(InterCodeEnum kind, int argNum, ...)
 		// 不是赋值操作，直接生成中间代码
 		else
 		{
-			codeSS = newInterCodeSS(newInterCode(kind, op1, op2));
+			codeSS = newInterCodeSS(newInterCode(kind, 2,op1, op2));
 			addInterCodeSS(interCodeList, codeSS);
 		}
 	}
@@ -677,7 +662,7 @@ void generateInterCode(InterCodeEnum kind, int argNum, ...)
 			generateInterCode(IR_READ_ADDR, 2, temp, op2);
 			op2 = temp;
 		}
-		codeSS = newInterCodeSS(newInterCode(kind, result, op1, op2));
+		codeSS = newInterCodeSS(newInterCode(kind, 3,result, op1, op2));
 		addInterCodeSS(interCodeList, codeSS);
 	}
 	else if (IS_DEC_INTERCODE(kind))
@@ -685,7 +670,7 @@ void generateInterCode(InterCodeEnum kind, int argNum, ...)
 		va_start(ap, argNum);
 		op1 = va_arg(ap, Operand *);
 		size = va_arg(ap, int);
-		codeSS = newInterCodeSS(newInterCode(kind, op1, size));
+		codeSS = newInterCodeSS(newInterCode(kind, 2,op1, size));
 		addInterCodeSS(interCodeList, codeSS);
 	}
 	else if (IS_COND_JUMP_INTERCODE(kind))
@@ -695,7 +680,7 @@ void generateInterCode(InterCodeEnum kind, int argNum, ...)
 		relop = va_arg(ap, Operand *);
 		op1 = va_arg(ap, Operand *);
 		op2 = va_arg(ap, Operand *);
-		codeSS = newInterCodeSS(newInterCode(kind, result, relop, op1, op2));
+		codeSS = newInterCodeSS(newInterCode(kind, 4,result, relop, op1, op2));
 		addInterCodeSS(interCodeList, codeSS);
 	}
 	else
@@ -1122,11 +1107,15 @@ void translateExp(Node *node, Operand *var)
 			// 数组下标乘以数组元素大小
 			Operand *size = newOperand(OP_CONSTANT, sizeOfType(searchTableItem(table, t1->u.name)->field->type->u.array.elem));
 			generateInterCode(IR_MUL, 3, t3, t2, size);
-			Operand *t4 = newTempVar(); // 数组首地址加上数组下标乘以数组元素大小
-			generateInterCode(IR_ADD, 3, t4, t1, t3);
-			Operand *t5 = newTempVar(); // 读取数组元素的值
-			generateInterCode(IR_READ_ADDR, 2, t5, t4);
+			Operand *t4 = newTempVar(); // 获取数组首地址
+			generateInterCode(IR_GET_ADDR, 2, t4, t1);
+			Operand *t5 = newTempVar(); // 计算数组元素地址
+			generateInterCode(IR_ADD, 3, t5, t4, t3);
+			// 将数组元素地址返回给var
 			generateInterCode(IR_ASSIGN, 2, var, t5);
+			var->kind = OP_ADDRESS;
+
+
 		}
 	}
 	else if (!strcmp(child->name, "NOT"))

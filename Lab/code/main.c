@@ -57,7 +57,7 @@ int main(int argc, char **argv)
 #endif
 
 #ifdef LAB3_ACTIVE
-        printf("Generating intermediate code...\n");
+        //printf("Generating intermediate code...\n");
         table = newTable();
         preTree(RootNode);
         interCodeList = newInterCodeList();
@@ -66,7 +66,7 @@ int main(int argc, char **argv)
         printf("Intermediate code generated:\n");
         printInterCodeList(File2Write, interCodeList);
 #endif
-        // printInterCodeList(File2Write, interCodeList);
+        printInterCodeList(File2Write, interCodeList);
 
         deleteTable(table);
 #endif

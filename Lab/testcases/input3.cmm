@@ -1,0 +1,7 @@
+int main()
+{
+	int a = 1;
+    int n[5];
+	n[1] = 123;
+	write(n[1]);
+}

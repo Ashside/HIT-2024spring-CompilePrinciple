@@ -1,6 +1,6 @@
 #ifndef INTERCODE_H
 #define INTERCODE_H
-#define DEBUG_INTER_CODE_GENERATION
+//#define DEBUG_INTER_CODE_GENERATION
 #include "SyntaxTree.h"
 #include "Semantic.h"
 #include "InterCodeEnum.h"
@@ -112,7 +112,7 @@ void freeOperand(Operand *op);
 void setOperand(Operand *op, OperandEnum kind, void *value);
 void printOperand(FILE *file, Operand *op);
 
-InterCode *newInterCode(InterCodeEnum kind, ...);
+InterCode *newInterCode(InterCodeEnum kind, int argNum,...);
 void freeInterCode(InterCode *code);
 
 InterCodeSS *newInterCodeSS(InterCode *code);

@@ -12,7 +12,7 @@ else
 	# 读入一个参数
 	echo "------------------------------------------------------"
 	echo "Running Testcase $1"
-	./parser ../testcases/input$1.cmm
+	./parser ../testcases/input$1.cmm > ../outputres/output$1.ir
 	echo "------------------------------------------------------"
 fi
 
