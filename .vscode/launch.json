@@ -7,7 +7,7 @@
 		"type": "cppdbg",
 		"request": "launch",
 		"program": "${workspaceRoot}/Lab/code/parser",
-		"args": ["${workspaceRoot}/Lab/testcases/input2.cmm", "${workspaceRoot}/Lab/outputres/output2.txt"],
+		"args": ["${workspaceRoot}/Lab/testcases/input3.cmm", "${workspaceRoot}/Lab/outputres/output2.txt"],
 		"stopAtEntry": false,
 		"cwd": "${workspaceRoot}/Lab/code",
 		"environment": [],
