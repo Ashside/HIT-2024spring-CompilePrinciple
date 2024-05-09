@@ -1,4 +1,3 @@
-
 #define LAB3_ACTIVE
 #include "SyntaxTree.h"
 #include "Parse.tab.h"
@@ -61,15 +60,16 @@ int main(int argc, char **argv)
         table = newTable();
         preTree(RootNode);
         interCodeList = newInterCodeList();
-        generateInterCodeSS(RootNode);
+        travelTranslate(RootNode);
 #ifdef DEBUG_INTER_CODE_GENERATION
         printf("Intermediate code generated:\n");
         printInterCodeList(File2Write, interCodeList);
-#endif
-        printInterCodeList(File2Write, interCodeList);
 
+#else // DEBUG_INTER_CODE_GENERATION
+        printInterCodeList(File2Write, interCodeList);
+#endif // DEBUG_INTER_CODE_GENERATION
         deleteTable(table);
-#endif
+#endif // LAB3_ACTIVE
     }
 
     freeTree(RootNode);

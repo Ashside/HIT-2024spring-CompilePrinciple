@@ -13,6 +13,7 @@ else
 	echo "------------------------------------------------------"
 	echo "Running Testcase $1"
 	./parser ../testcases/input$1.cmm > ../outputres/output$1.ir
+	node ../irvm.mjs ../outputres/output$1.ir -p -r
 	echo "------------------------------------------------------"
 fi
 

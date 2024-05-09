@@ -12,7 +12,7 @@ Operand *newOperand(OperandEnum kind, ...)
 	// 使用va_list来处理可变参数，此处可以不指明参数个数
 	// 实际上相当于void*
 #ifdef DEBUG_INTER_CODE_GENERATION
-	printf("newOperand: %d\n", kind);
+	printf("newOperand Kind: %d\n", kind);
 #endif
 	Operand *op = (Operand *)malloc(sizeof(Operand));
 	op->kind = kind;
@@ -24,6 +24,9 @@ Operand *newOperand(OperandEnum kind, ...)
 	{
 	case OP_CONSTANT:
 		op->u.value = va_arg(ap, int);
+#ifdef DEBUG_INTER_CODE_GENERATION
+		printf("newOperand: %d\n", op->u.value);
+#endif
 		break;
 	case OP_VARIABLE:
 	case OP_ADDRESS:
@@ -31,8 +34,14 @@ Operand *newOperand(OperandEnum kind, ...)
 	case OP_FUNCTION:
 	case OP_RELOP:
 		op->u.name = va_arg(ap, char *);
+#ifdef DEBUG_INTER_CODE_GENERATION
+		printf("newOperand: %s\n", op->u.name);
+#endif
 		break;
 	default:
+#ifdef DEBUG_INTER_CODE_GENERATION
+		printf("newOperand: default\n");
+#endif
 		break;
 	}
 
@@ -98,11 +107,11 @@ void setOperand(Operand *op, OperandEnum kind, int argNum, ...)
 }
 
 /// 打印操作数/
-/// 
+///
 /// 根据操作数的类型，向文件中打印操作数的值，这里文件指针一般是stdout
 /// @param file 文件指针
 /// @param op 操作数
-/// 
+///
 void printOperand(FILE *file, Operand *op)
 {
 	if (op == NULL)
@@ -124,7 +133,6 @@ void printOperand(FILE *file, Operand *op)
 		break;
 	}
 }
-
 
 /// 生成中间代码InterCode
 /// @param kind 中间代码类型(InterCodeEnum)
@@ -209,7 +217,6 @@ void freeInterCodeSS(InterCodeSS *codeSS)
 	freeInterCode(&codeSS->code);
 	free(codeSS);
 }
-
 
 /// 打印中间代码节点
 /// @param file 文件指针
@@ -335,8 +342,8 @@ InterCodeList *newInterCodeList()
 	list->cur = NULL;
 	// 临时变量编号
 	// TODO 临时变量编号的生成
-	list->tempVarNum = 1;
-	list->labelNum = 1;
+	list->tempCnt = 1;
+	list->labeCnt = 1;
 	return list;
 }
 
@@ -382,7 +389,6 @@ void addInterCodeSS(InterCodeList *list, InterCodeSS *codeSS)
 	}
 }
 
-
 /// 打印中间代码双向链表
 /// @param file 文件指针
 /// @param list 中间代码双向链表
@@ -419,7 +425,6 @@ void freeArgument(Argument *arg)
 	free(arg);
 }
 
-
 /// 生成参数链表
 ArgList *newArgList()
 {
@@ -448,8 +453,8 @@ void freeArgList(ArgList *argList)
 }
 
 /// @brief 向参数链表中添加参数
-/// @param argList 
-/// @param arg 
+/// @param argList
+/// @param arg
 void addArg(ArgList *argList, Argument *arg)
 {
 	if (argList == NULL || arg == NULL)
@@ -474,8 +479,8 @@ Operand *newTempVar()
 {
 	Operand *op = newOperand(OP_VARIABLE, "t");
 	op->u.name = (char *)malloc(sizeof(char) * 10);
-	sprintf(op->u.name, "t%d", interCodeList->tempVarNum);
-	interCodeList->tempVarNum++; // 临时变量编号加一
+	sprintf(op->u.name, "t%d", interCodeList->tempCnt);
+	interCodeList->tempCnt++; // 临时变量编号加一
 	return op;
 }
 
@@ -485,14 +490,14 @@ Operand *newLabel()
 {
 	Operand *op = newOperand(OP_LABEL, "label");
 	op->u.name = (char *)malloc(sizeof(char) * 10);
-	sprintf(op->u.name, "label%d", interCodeList->labelNum);
-	interCodeList->labelNum++;
+	sprintf(op->u.name, "label%d", interCodeList->labeCnt);
+	interCodeList->labeCnt++;
 	return op;
 }
 
-/// @brief 开始生成中间代码节点
-/// @param root 
-void generateInterCodeSS(Node *root)
+/// @brief 遍历并启动翻译
+/// @param root
+void travelTranslate(Node *root)
 {
 	if (root == NULL)
 	{
@@ -504,8 +509,8 @@ void generateInterCodeSS(Node *root)
 	}
 	else
 	{
-		generateInterCodeSS(root->child);
-		generateInterCodeSS(root->sibling);
+		travelTranslate(root->child);
+		travelTranslate(root->sibling);
 	}
 }
 
@@ -626,7 +631,7 @@ void generateInterCode(InterCodeEnum kind, int argNum, ...)
 }
 
 /// @brief 由于没有全局变量的使用，直接解析函数定义
-/// @param node 
+/// @param node
 void translateExtDefList(Node *node)
 {
 	// ExtDefList -> ExtDef ExtDefList
@@ -642,7 +647,7 @@ void translateExtDefList(Node *node)
 }
 
 /// @brief 在产生式ExtDef -> Specifier FunDec CompSt中，解析函数定义
-/// @param node 
+/// @param node
 void translateExtDef(Node *node)
 {
 	// ExtDef -> Specifier ExtDecList SEMI
@@ -666,7 +671,7 @@ void translateExtDef(Node *node)
 }
 
 /// @brief 解析函数定义
-/// @param node 
+/// @param node
 void translateFunDec(Node *node)
 {
 	// FunDec -> ID LP VarList RP
@@ -700,7 +705,7 @@ void translateFunDec(Node *node)
 	}
 }
 /// @brief 翻译CompSt，注意代码块中可能没有定义，即DefList为空
-/// @param node 
+/// @param node
 void translateCompSt(Node *node)
 {
 	// CompSt -> LC DefList StmtList RC
@@ -711,8 +716,6 @@ void translateCompSt(Node *node)
 	}
 	// 检查第二个孩子是否是DefList
 	Node *secondChild = node->child->sibling;
-
-
 
 	if (!strcmp(secondChild->name, "DefList"))
 	{
@@ -727,8 +730,8 @@ void translateCompSt(Node *node)
 }
 
 /// @brief 翻译参数列表
-/// @param node 
-/// @param argList 
+/// @param node
+/// @param argList
 void translateArgs(Node *node, ArgList *argList)
 {
 	// Args -> Exp COMMA Args
@@ -743,9 +746,8 @@ void translateArgs(Node *node, ArgList *argList)
 	}
 }
 
-
 /// @brief 翻译定义列表
-/// @param node 
+/// @param node
 void translateDefList(Node *node)
 {
 	// DefList -> Def DefList
@@ -782,7 +784,7 @@ void translateDef(Node *node)
 }
 
 /// @brief 翻译声明列表
-/// @param node 
+/// @param node
 void translateDecList(Node *node)
 {
 	// DecList -> Dec
@@ -808,9 +810,8 @@ void translateDecList(Node *node)
 	}
 }
 
-
 /// @brief 翻译声明，注意可能存在初始化赋值
-/// @param node 
+/// @param node
 void translateDec(Node *node)
 {
 	// Dec -> VarDec
@@ -869,7 +870,7 @@ void translateVarDec(Node *node, Operand *var)
 				// 由于上层传来的是一个临时变量
 				// 而此处的变量有自己的名字
 				// 所以此处不需要生成临时变量
-				interCodeList->tempVarNum--; // 临时变量编号减一，因为不需要生成临时变量
+				interCodeList->tempCnt--; // 临时变量编号减一，因为不需要生成临时变量
 				// 修改操作数的名字
 				setOperand(var, OP_VARIABLE, 1, newString(idNode->value));
 			}
@@ -889,7 +890,7 @@ void translateVarDec(Node *node, Operand *var)
 }
 
 /// @brief 翻译语句序列
-/// @param node 
+/// @param node
 void translateStmtList(Node *node)
 {
 	// StmtList -> Stmt StmtList
@@ -909,7 +910,7 @@ void translateStmtList(Node *node)
 }
 
 /// @brief 翻译语句
-/// @param node 
+/// @param node
 void translateStmt(Node *node)
 {
 	// Stmt -> Exp SEMI
@@ -972,7 +973,7 @@ void translateStmt(Node *node)
 			// goto label3
 			// label2:
 			// stmt
-			// label3: 
+			// label3:
 			// 离开代码块
 			generateInterCode(IR_GOTO, 1, label3);
 			generateInterCode(IR_LABEL, 1, label2);
@@ -985,19 +986,19 @@ void translateStmt(Node *node)
 		// WHILE LP Exp RP Stmt
 		Operand *label1 = newLabel(); // 循环开始
 		Operand *label2 = newLabel(); // 循环体
-		Operand *label3 = newLabel(); // 循环结束	
+		Operand *label3 = newLabel(); // 循环结束
 		NodePtr expNode = child->sibling->sibling;
 		NodePtr stmtNode = expNode->sibling->sibling;
-		generateInterCode(IR_LABEL, 1, label1); //循环开始标志
+		generateInterCode(IR_LABEL, 1, label1); // 循环开始标志
 		translateCond(expNode, label2, label3); // 注意传入的是label2和label3，检查exp是否为真，并跳转到label2或label3
-		generateInterCode(IR_LABEL, 1, label2); //循环体标志
-		translateStmt(stmtNode); // 翻译循环体
-		generateInterCode(IR_GOTO, 1, label1); //跳转到循环开始
-		generateInterCode(IR_LABEL, 1, label3); //循环结束标志
+		generateInterCode(IR_LABEL, 1, label2); // 循环体标志
+		translateStmt(stmtNode);				// 翻译循环体
+		generateInterCode(IR_GOTO, 1, label1);	// 跳转到循环开始
+		generateInterCode(IR_LABEL, 1, label3); // 循环结束标志
 	}
 }
 /// @brief 翻译表达式
-/// @param node 
+/// @param node
 /// @param var 上层传入一个操作数，用于获取本次表达式的值
 void translateExp(Node *node, Operand *var)
 {
@@ -1053,8 +1054,8 @@ void translateExp(Node *node, Operand *var)
 			Operand *true_num = newOperand(OP_CONSTANT, 1);
 			Operand *false_num = newOperand(OP_CONSTANT, 0);
 			generateInterCode(IR_ASSIGN, 2, var, false_num);
-			translateCond(node, label1, label2); // 翻译条件，如果条件为真，跳转到label1，否则跳转到label2
-			generateInterCode(IR_LABEL, 1, label1); // 标签1
+			translateCond(node, label1, label2);			// 翻译条件，如果条件为真，跳转到label1，否则跳转到label2
+			generateInterCode(IR_LABEL, 1, label1);			// 标签1
 			generateInterCode(IR_ASSIGN, 2, var, true_num); // 赋值为真
 		}
 		// Exp -> Exp PLUS Exp
@@ -1181,16 +1182,19 @@ void translateExp(Node *node, Operand *var)
 					// 倒序生成ARG中间代码
 					while (tempArg != NULL)
 					{
-						if (headArg == lastArg) {
+						if (headArg == lastArg)
+						{
 							generateInterCode(IR_ARG, 1, tempArg->op);
 							break;
 						}
-						if (tempArg->next==lastArg){
+						if (tempArg->next == lastArg)
+						{
 							generateInterCode(IR_ARG, 1, lastArg->op);
 							lastArg = tempArg;
 							tempArg = headArg;
 						}
-						else {
+						else
+						{
 							tempArg = tempArg->next;
 						}
 					}
@@ -1235,14 +1239,14 @@ void translateExp(Node *node, Operand *var)
 			{
 				return;
 			}
-			interCodeList->tempVarNum--; // 临时变量编号减一，因为不需要生成临时变量
+			interCodeList->tempCnt--; // 临时变量编号减一，因为不需要生成临时变量
 			setOperand(var, OP_VARIABLE, 1, newString(child->value));
 		}
 	}
 	else if (!strcmp(child->name, "INT"))
 	{
 		// INT
-		interCodeList->tempVarNum--; // 临时变量编号减一，因为不需要生成临时变量
+		interCodeList->tempCnt--; // 临时变量编号减一，因为不需要生成临时变量
 		setOperand(var, OP_CONSTANT, 1, atoi(child->value));
 	}
 	else if (!strcmp(child->name, "FLOAT"))
@@ -1254,9 +1258,9 @@ void translateExp(Node *node, Operand *var)
 }
 
 /// @brief 翻译条件表达式，若为真跳转到labelTrue，否则跳转到labelFalse
-/// @param node 
-/// @param labelTrue 
-/// @param labelFalse 
+/// @param node
+/// @param labelTrue
+/// @param labelFalse
 void translateCond(Node *node, Operand *labelTrue, Operand *labelFalse)
 {
 	// Exp -> Exp RELOP Exp
@@ -1303,18 +1307,18 @@ void translateCond(Node *node, Operand *labelTrue, Operand *labelFalse)
 	else if (!strcmp(sibling->name, "AND"))
 	{
 		Operand *label1 = newLabel();
-		translateCond(child, label1, labelFalse); // 如果第一个条件为真，跳转到label1，再判断第二个条件
-		generateInterCode(IR_LABEL, 1, label1); // 标签1
+		translateCond(child, label1, labelFalse);					   // 如果第一个条件为真，跳转到label1，再判断第二个条件
+		generateInterCode(IR_LABEL, 1, label1);						   // 标签1
 		translateCond(child->sibling->sibling, labelTrue, labelFalse); // 如果第二个条件为真，跳转到labelTrue，否则跳转到labelFalse
 	}
 	else if (!strcmp(sibling->name, "OR"))
 	{
 		Operand *label1 = newLabel();
-		translateCond(child, labelTrue, label1); // 如果第一个条件为真，跳转到labelTrue，若为假，才跳转到标签判断第二个条件
-		generateInterCode(IR_LABEL, 1, label1); // 标签1
+		translateCond(child, labelTrue, label1);					   // 如果第一个条件为真，跳转到labelTrue，若为假，才跳转到标签判断第二个条件
+		generateInterCode(IR_LABEL, 1, label1);						   // 标签1
 		translateCond(child->sibling->sibling, labelTrue, labelFalse); // 如果第二个条件为真，跳转到labelTrue，否则跳转到labelFalse
 	}
-	else // 无条件跳转
+	else // 检查条件真假并对应跳转，也是其他条件的基础
 	{
 		Operand *t1 = newTempVar();
 		translateExp(node, t1);
@@ -1328,7 +1332,9 @@ void translateCond(Node *node, Operand *labelTrue, Operand *labelFalse)
 			generateInterCode(IR_READ_ADDR, 2, temp, t1);
 			t1 = temp;
 		}
+		// 如果t1不等于0，跳转到labelTrue，否则跳转到labelFalse
 		generateInterCode(IR_IF_GOTO, 4, t1, neq, zero, labelTrue);
+		// 无条件跳转到labelFalse
 		generateInterCode(IR_GOTO, 1, labelFalse);
 	}
 }

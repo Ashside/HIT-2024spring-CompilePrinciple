@@ -33,6 +33,11 @@ typedef struct InterCode_
 		} assign;
 		struct
 		{
+			Operand *op;
+			int size;
+		} decSize;
+		struct
+		{
 			Operand *result;
 			Operand *op1;
 			Operand *op2;
@@ -44,11 +49,7 @@ typedef struct InterCode_
 			Operand *y;
 			Operand *z;
 		} condJmp;
-		struct
-		{
-			Operand *op;
-			int size;
-		} decSize;
+
 	} u;
 
 } InterCode; // intermediate code
@@ -62,9 +63,9 @@ typedef struct InterCodeSS_
 typedef struct InterCodeList_
 {
 	InterCodeSS *head; // 头节点，打印时从头节点开始打印
-	InterCodeSS *cur; // 当前节点，用于添加新节点
-	int tempVarNum; // 临时变量计数
-	int labelNum; // 标签计数
+	InterCodeSS *cur;  // 当前节点，用于添加新节点
+	int tempCnt;	   // 临时变量计数
+	int labeCnt;	   // 标签计数
 } InterCodeList;
 
 typedef struct Argument
@@ -79,7 +80,6 @@ typedef struct ArgList_
 	Argument *cur;
 } ArgList;
 
-extern int InterError;
 extern InterCodeList *interCodeList;
 
 // 单操作数中间码
@@ -112,10 +112,10 @@ extern InterCodeList *interCodeList;
 // @param ...: 中间代码参数
 Operand *newOperand(OperandEnum kind, ...);
 void freeOperand(Operand *op);
-void setOperand(Operand *op, OperandEnum kind, int argNnum,...);
+void setOperand(Operand *op, OperandEnum kind, int argNnum, ...);
 void printOperand(FILE *file, Operand *op);
 
-InterCode *newInterCode(InterCodeEnum kind, int argNum,...);
+InterCode *newInterCode(InterCodeEnum kind, int argNum, ...);
 void freeInterCode(InterCode *code);
 
 InterCodeSS *newInterCodeSS(InterCode *code);
@@ -136,10 +136,8 @@ void addArg(ArgList *argList, Argument *arg);
 
 Operand *newTempVar();
 Operand *newLabel();
-
-void generateInterCodeSS(Node *root);
+void travelTranslate(Node *root);
 void generateInterCode(InterCodeEnum kind, int argNum, ...);
-
 
 void translateExtDefList(Node *node);
 void translateExtDef(Node *node);
