@@ -1,20 +1,6 @@
-int fact(int n, int m)
-{
-	write(n);
-	write(m);
-	return 0;
-}
 int main()
 {
-    int a;
-	int b;
-	int c[10];
-    a = read();
-	b = read();
-	fact(a,b);
-	c[1] = 23;
-	write(c[1]);
-	write(-c[1]);
-	write(!c[1]);
+	write(2 && 1);
+	write(0 || 0);
     return 0;
 }

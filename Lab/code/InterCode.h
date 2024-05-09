@@ -1,6 +1,6 @@
 #ifndef INTERCODE_H
 #define INTERCODE_H
-//#define DEBUG_INTER_CODE_GENERATION
+// #define DEBUG_INTER_CODE_GENERATION
 #include "SyntaxTree.h"
 #include "Semantic.h"
 #include "InterCodeEnum.h"
@@ -107,6 +107,13 @@ extern InterCodeList *interCodeList;
 #define IS_DEC_INTERCODE(kind) \
 	(kind == IR_DEC)
 
+#define CALCULATE_ADDRESS(t)                         \
+	if (t->kind == OP_ADDRESS)                       \
+	{                                                \
+		Operand *temp = newTempVar();                \
+		generateInterCode(IR_READ_ADDR, 2, temp, t); \
+		t = temp;                                    \
+	}
 // 生成操作数
 // @param kind: 中间代码类型
 // @param ...: 中间代码参数

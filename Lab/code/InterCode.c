@@ -1053,12 +1053,13 @@ void translateExp(Node *node, Operand *var)
 			Operand *label2 = newLabel();
 			Operand *true_num = newOperand(OP_CONSTANT, 1);
 			Operand *false_num = newOperand(OP_CONSTANT, 0);
-			generateInterCode(IR_ASSIGN, 2, var, false_num); //先将var赋值为假
-			translateCond(node, label1, label2);			// 翻译条件，如果条件为真，跳转到label1，否则跳转到label2
+			generateInterCode(IR_ASSIGN, 2, var, false_num); // 先将var赋值为假
+			translateCond(node, label1, label2);			 // 翻译条件，如果条件为真，跳转到label1，否则跳转到label2
 			// label2是一个假标签，用于跳出条件判断
 			// 在translateCond中，最后一步是生成跳转到label2的中间代码
 			generateInterCode(IR_LABEL, 1, label1);			// 标签1
 			generateInterCode(IR_ASSIGN, 2, var, true_num); // 赋值为真
+			generateInterCode(IR_LABEL, 1, label2);			// 标签2
 		}
 		// Exp -> Exp PLUS Exp
 		// Exp -> Exp ASSIGNOP Exp
@@ -1284,46 +1285,40 @@ void translateCond(Node *node, Operand *labelTrue, Operand *labelFalse)
 		// 重新传入表达式
 		translateCond(child->sibling, labelFalse, labelTrue);
 	}
-	else if (!strcmp(sibling->name, "RELOP"))
+	else if (sibling != NULL)
 	{
-		Operand *t1 = newTempVar();
-		Operand *t2 = newTempVar();
-		translateExp(child, t1);
-		translateExp(child->sibling->sibling, t2);
-		Operand *relop = newOperand(OP_RELOP, newString(sibling->value));
+		if ((!strcmp(sibling->name, "RELOP")))
+		{
+			Operand *t1 = newTempVar();
+			Operand *t2 = newTempVar();
+			translateExp(child, t1);
+			translateExp(child->sibling->sibling, t2);
+			Operand *relop = newOperand(OP_RELOP, newString(sibling->value));
 
-		// 此处涉及数值计算需要计算结果
-		// 如果t1和t2是地址，那么需要先读取地址
-		if (t1->kind == OP_ADDRESS)
-		{
-			Operand *temp = newTempVar();
-			generateInterCode(IR_READ_ADDR, 2, temp, t1);
-			t1 = temp;
+			// 此处涉及数值计算需要计算结果
+			// 如果t1和t2是地址，那么需要先读取地址
+			CALCULATE_ADDRESS(t1)
+			CALCULATE_ADDRESS(t2)
+			// 在relop处理中，如果条件为真，跳转到labelTrue，否则跳转到labelFalse
+			generateInterCode(IR_IF_GOTO, 4, t1, relop, t2, labelTrue);
+			generateInterCode(IR_GOTO, 1, labelFalse);
 		}
-		if (t2->kind == OP_ADDRESS)
+		else if (!strcmp(sibling->name, "AND"))
 		{
-			Operand *temp = newTempVar();
-			generateInterCode(IR_READ_ADDR, 2, temp, t2);
-			t2 = temp;
+			Operand *label1 = newLabel();
+			translateCond(child, label1, labelFalse);					   // 如果第一个条件为真，跳转到label1，再判断第二个条件
+			generateInterCode(IR_LABEL, 1, label1);						   // 标签1
+			translateCond(child->sibling->sibling, labelTrue, labelFalse); // 如果第二个条件为真，跳转到labelTrue，否则跳转到labelFalse
 		}
-		// 在relop处理中，如果条件为真，跳转到labelTrue，否则跳转到labelFalse
-		generateInterCode(IR_IF_GOTO, 4, t1, relop, t2, labelTrue);
-		generateInterCode(IR_GOTO, 1, labelFalse);
+		else if (!strcmp(sibling->name, "OR"))
+		{
+			Operand *label1 = newLabel();
+			translateCond(child, labelTrue, label1);					   // 如果第一个条件为真，跳转到labelTrue，若为假，才跳转到标签判断第二个条件
+			generateInterCode(IR_LABEL, 1, label1);						   // 标签1
+			translateCond(child->sibling->sibling, labelTrue, labelFalse); // 如果第二个条件为真，跳转到labelTrue，否则跳转到labelFalse
+		}
 	}
-	else if (!strcmp(sibling->name, "AND"))
-	{
-		Operand *label1 = newLabel();
-		translateCond(child, label1, labelFalse);					   // 如果第一个条件为真，跳转到label1，再判断第二个条件
-		generateInterCode(IR_LABEL, 1, label1);						   // 标签1
-		translateCond(child->sibling->sibling, labelTrue, labelFalse); // 如果第二个条件为真，跳转到labelTrue，否则跳转到labelFalse
-	}
-	else if (!strcmp(sibling->name, "OR"))
-	{
-		Operand *label1 = newLabel();
-		translateCond(child, labelTrue, label1);					   // 如果第一个条件为真，跳转到labelTrue，若为假，才跳转到标签判断第二个条件
-		generateInterCode(IR_LABEL, 1, label1);						   // 标签1
-		translateCond(child->sibling->sibling, labelTrue, labelFalse); // 如果第二个条件为真，跳转到labelTrue，否则跳转到labelFalse
-	}
+
 	else // 检查条件真假并对应跳转，也是其他条件的基础
 	{
 		Operand *t1 = newTempVar();
