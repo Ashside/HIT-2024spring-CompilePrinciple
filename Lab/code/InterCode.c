@@ -1138,6 +1138,7 @@ void translateExp(Node *node, Operand *var)
 		translateCond(node, label1, label2);
 		generateInterCode(IR_LABEL, 1, label1);
 		generateInterCode(IR_ASSIGN, 2, var, true_num);
+		generateInterCode(IR_LABEL, 1, label2);
 	}
 	else if (!strcmp(child->name, "LP"))
 	{

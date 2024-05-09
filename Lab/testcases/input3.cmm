@@ -8,9 +8,13 @@ int main()
 {
     int a;
 	int b;
+	int c[10];
     a = read();
 	b = read();
 	fact(a,b);
-
+	c[1] = 23;
+	write(c[1]);
+	write(-c[1]);
+	write(!c[1]);
     return 0;
 }
