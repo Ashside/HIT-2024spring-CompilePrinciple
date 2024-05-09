@@ -1053,8 +1053,10 @@ void translateExp(Node *node, Operand *var)
 			Operand *label2 = newLabel();
 			Operand *true_num = newOperand(OP_CONSTANT, 1);
 			Operand *false_num = newOperand(OP_CONSTANT, 0);
-			generateInterCode(IR_ASSIGN, 2, var, false_num);
+			generateInterCode(IR_ASSIGN, 2, var, false_num); //先将var赋值为假
 			translateCond(node, label1, label2);			// 翻译条件，如果条件为真，跳转到label1，否则跳转到label2
+			// label2是一个假标签，用于跳出条件判断
+			// 在translateCond中，最后一步是生成跳转到label2的中间代码
 			generateInterCode(IR_LABEL, 1, label1);			// 标签1
 			generateInterCode(IR_ASSIGN, 2, var, true_num); // 赋值为真
 		}
@@ -1067,9 +1069,9 @@ void translateExp(Node *node, Operand *var)
 			// Exp -> Exp ASSIGNOP Exp
 			if (!strcmp(node->child->sibling->name, "ASSIGNOP"))
 			{
-				Operand *t2 = newTempVar();
+				Operand *t2 = newTempVar(); // 计算右侧表达式的值
 				translateExp(node->child->sibling->sibling, t2);
-				Operand *t1 = newTempVar();
+				Operand *t1 = newTempVar(); // 接收右侧表达式的值
 				translateExp(node->child, t1);
 				generateInterCode(IR_ASSIGN, 2, t1, t2);
 			}
@@ -1180,6 +1182,7 @@ void translateExp(Node *node, Operand *var)
 					Argument *lastArg = argList->cur;
 					Argument *tempArg = headArg;
 					// 倒序生成ARG中间代码
+					// 双指针法
 					while (tempArg != NULL)
 					{
 						if (headArg == lastArg)
@@ -1234,6 +1237,7 @@ void translateExp(Node *node, Operand *var)
 		// Exp -> ID
 		else
 		{
+			// 该变量有名字
 			ItemPtr item = searchTableItem(table, child->value);
 			if (item == NULL)
 			{
@@ -1287,6 +1291,7 @@ void translateCond(Node *node, Operand *labelTrue, Operand *labelFalse)
 		translateExp(child->sibling->sibling, t2);
 		Operand *relop = newOperand(OP_RELOP, newString(sibling->value));
 
+		// 此处涉及数值计算需要计算结果
 		// 如果t1和t2是地址，那么需要先读取地址
 		if (t1->kind == OP_ADDRESS)
 		{
