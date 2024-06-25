@@ -4,9 +4,9 @@
 
 ## code - 代码
 
-* Lab1-Lexer.l Parse.y SyntaxTree.c SyntaxTree.h
-* Lab2-SemanTypeEnum.h Semantic.c Semantic.h
-* Lab3-InterCodeEnum.h InterCode.c InterCode.h
+* Lab1-`Lexer.l` ` Parse.y` ` SyntaxTree.c` ` SyntaxTree.h`
+* Lab2-`SemanTypeEnum.h` ` Semantic.c` ` Semantic.h`
+* Lab3-`InterCodeEnum.h` ` InterCode.c ` `InterCode.h`
 * 你总是会用到的工具
   * Makefile - cd code之后，输入make即可编译Lab3的可执行文件，你也可以根据上文自行调整Makefile文件
   * test.sh - 简单的测试脚本，具体使用可以自行查看脚本内容并调整
